@@ -1,0 +1,9 @@
+{
+  "name": "M.O.T. Technology Innovation Lab",
+  "short_name": "M.O.T.",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#071a2f",
+  "theme_color": "#071a2f",
+  "icons": [{"src":"assets/icons/favicon.svg","sizes":"any","type":"image/svg+xml"}]
+}

@@ -4,9 +4,9 @@
 */
 window.MOT_CONFIG = {
   siteName: "M.O.T. Technology Innovation Lab",
-  contactEmail: "YOUR_EMAIL@example.com",
-  phoneDisplay: "+82 10 0000 0000",
-  phoneLink: "+821000000000",
-  wechat: "YOUR_WECHAT_ID",
-  siteUrl: "https://YOUR_GITHUB_USERNAME.github.io/YOUR_REPOSITORY_NAME/"
+  contactEmail: "jeongjae_choi@naver.com",
+  phoneDisplay: "+82 10 7502 0845",
+  phoneLink: "+821075020845",
+  wechat: "choijjai",
+  siteUrl: "https://jeong67jea.github.io/mot-printcore.com/#contact"
 };

@@ -36,10 +36,10 @@ window.MOT_COMMERCE_CONFIG = {
     - B2B 서비스: 결제 링크보다 견적·계약·청구서 방식이 기본입니다.
   */
   checkouts: {
-    pdfSingle: "{{ PDF 단권 결제 URL }}",
-    pdfLibraryMonthly: "{{ PDF 라이브러리 월 구독 URL }}",
-    academyCourse: "{{ 동영상 단과 결제 URL }}",
-    academyMembership: "{{ 동영상 멤버십 결제 URL }}"
+    pdfSingle: "academy.html?focus=pdf",
+    pdfLibraryMonthly: "academy.html?focus=subscription",
+    academyCourse: "academy.html?focus=video",
+    academyMembership: "academy.html?focus=subscription"
   },
 
   /* Initial public price architecture. Change only after reviewing costs and market response. */
@@ -98,7 +98,7 @@ window.MOT_COMMERCE_CONFIG = {
         name: "기술서적 단권 구매",
         price: "₩79,000 / 권",
         billing: "1회 결제 · 개인용 영구 열람",
-        access: "결제 완료 후 개인 워터마크 PDF 다운로드",
+        access: "결제 서버 검증 후 비공개 파일의 제한시간 다운로드 링크 발급",
         button: "단권 구매",
         checkoutKey: "pdfSingle",
         note: "다운로드형 파일은 공급이 시작된 뒤에는 환불 제한 정책이 적용됩니다. 결제 전 미리보기와 목차를 반드시 확인하십시오."

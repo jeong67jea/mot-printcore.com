@@ -1,11 +1,14 @@
 (function () {
   'use strict';
 
-  const C = window.MOT_COMMERCE_CONFIG;
+  const C = window.MOT_COMMERCE_CONFIG || {
+    company: {}, policy: {}, checkouts: {}, offers: { b2b: [], content: [] }
+  };
   const D = window.MOT_COMMERCE_I18N || {};
-  if (!C || !D.ko) return;
+  if (!D.ko) return;
 
   const SUPPORTED = ['ko', 'en', 'zh'];
+  const sharedLocale = window.MOTLocale;
   const PAGE = document.body.dataset.commercePage || 'commerce';
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
@@ -13,7 +16,7 @@
   const safe = (value) => String(value ?? '').replace(/[&<>'"]/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[m]));
 
   const urlLocale = new URLSearchParams(window.location.search).get('lang');
-  let locale = SUPPORTED.includes(urlLocale) ? urlLocale : (localStorage.getItem('mot-locale') || 'ko');
+  let locale = sharedLocale ? sharedLocale.init() : (SUPPORTED.includes(urlLocale) ? urlLocale : (localStorage.getItem('mot-locale') || 'ko'));
   if (!SUPPORTED.includes(locale)) locale = 'ko';
 
   const t = (key) => (D[locale] && Object.prototype.hasOwnProperty.call(D[locale], key) ? D[locale][key] : (D.ko[key] || key));
@@ -29,6 +32,7 @@
   function setPageMetadata() {
     document.documentElement.lang = locale === 'zh' ? 'zh-CN' : locale;
     document.documentElement.dataset.locale = locale;
+    sharedLocale?.propagate(locale);
     const title = D[locale]?.pageTitles?.[PAGE] || D.ko.pageTitles?.[PAGE] || document.title;
     document.title = title;
     const description = D[locale]?.meta?.[PAGE] || D.ko.meta?.[PAGE];
@@ -67,7 +71,8 @@
     const grid = $('#b2b-offers');
     if (!grid) return;
     const vatText = C.policy.priceBasis === 'VAT_INCLUSIVE' ? t('vatIncluded') : t('vatExclusive');
-    grid.innerHTML = C.offers.b2b.map((rawOffer, index) => {
+    const offers = C.offers?.b2b || [];
+    grid.innerHTML = offers.map((rawOffer, index) => {
       const offer = localOffer('b2b', rawOffer.code, rawOffer);
       return `
         <article class="offer-card ${index === 2 ? 'offer-card-featured' : ''}">
@@ -85,7 +90,8 @@
   function renderContent() {
     const grid = $('#content-offers');
     if (!grid) return;
-    grid.innerHTML = C.offers.content.map((rawItem, index) => {
+    const items = C.offers?.content || [];
+    grid.innerHTML = items.map((rawItem, index) => {
       const item = localOffer('content', rawItem.sku, rawItem);
       const url = C.checkouts[rawItem.checkoutKey];
       const inactive = isPlaceholder(url);
@@ -143,15 +149,21 @@
 
   function bindLanguageButtons() {
     $$('.commerce-lang-btn').forEach((button) => {
+      if (button.dataset.localeBound === 'true') return;
+      button.dataset.localeBound = 'true';
+      button.type = 'button';
       button.addEventListener('click', () => {
         const requested = button.dataset.commerceLang;
         if (!SUPPORTED.includes(requested)) return;
-        locale = requested;
-        localStorage.setItem('mot-locale', locale);
-        const current = new URL(window.location.href);
-        current.searchParams.set('lang', locale);
-        history.replaceState(null, '', current);
-        render();
+        if (sharedLocale) sharedLocale.set(requested);
+        else {
+          locale = requested;
+          localStorage.setItem('mot-locale', locale);
+          const current = new URL(window.location.href);
+          current.searchParams.set('lang', locale);
+          history.replaceState(null, '', current);
+          render();
+        }
       });
     });
   }
@@ -178,5 +190,12 @@
     configureFormMail();
     bindLanguageButtons();
     bindUnconfiguredCheckout();
+    if (sharedLocale) {
+      sharedLocale.subscribe((next) => {
+        if (!SUPPORTED.includes(next)) return;
+        locale = next;
+        render();
+      });
+    }
   });
 })();

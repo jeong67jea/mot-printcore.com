@@ -3,7 +3,8 @@
   const dictionaries = window.MOT_I18N || {};
   const issueSets = window.MOT_ISSUES || {};
   const defaultLocale = "ko";
-  let locale = localStorage.getItem("mot-locale") || defaultLocale;
+  const sharedLocale = window.MOTLocale;
+  let locale = sharedLocale ? sharedLocale.init() : (localStorage.getItem("mot-locale") || defaultLocale);
   if (!dictionaries[locale]) locale = defaultLocale;
   let currentIssue = "resistance";
 
@@ -34,6 +35,8 @@
   function translate() {
     const dict = dictionaries[locale] || dictionaries[defaultLocale];
     document.documentElement.lang = locale === 'zh' ? 'zh-CN' : locale;
+    document.documentElement.dataset.locale = locale;
+    sharedLocale?.propagate(locale);
     $$('[data-i18n]').forEach((el) => {
       const key = el.dataset.i18n;
       if (Object.prototype.hasOwnProperty.call(dict, key)) el.textContent = dict[key];
@@ -213,10 +216,21 @@
     bindProjectForm();
     $('#year').textContent = new Date().getFullYear();
     $$('.lang-btn').forEach((button) => button.addEventListener('click', () => {
-      locale = button.dataset.lang;
-      localStorage.setItem('mot-locale', locale);
-      translate();
+      const next = button.dataset.lang;
+      if (sharedLocale) sharedLocale.set(next);
+      else {
+        locale = next;
+        localStorage.setItem('mot-locale', locale);
+        translate();
+      }
     }));
+    if (sharedLocale) {
+      sharedLocale.subscribe((next) => {
+        if (!dictionaries[next]) return;
+        locale = next;
+        translate();
+      });
+    }
   }
 
   document.addEventListener('DOMContentLoaded', boot);

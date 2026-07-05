@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Content Admin | M.O.T. PrintCore Academy</title>
+  <link rel="icon" href="assets/icons/favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/academy.css">
+  <script src="assets/js/academy-config.js"></script>
+  <script src="assets/js/academy-i18n.js"></script>
+  <script src="assets/js/mot-locale.js"></script>
+  <script src="assets/js/academy-ui.js"></script>
+  <script type="module" src="assets/js/academy.js"></script>
+  <script type="module" src="assets/js/admin-content.js"></script>
+</head>
+<body data-academy-page="admin">
+  <a class="a-skip" href="#admin-main" data-ai18n="skip">본문으로 바로가기</a>
+
+  <header class="a-header">
+    <div class="a-container a-header-inner">
+      <a class="a-brand" href="academy.html" aria-label="M.O.T. PrintCore Academy">
+        <span class="a-brand-mark">M.O.T.</span>
+        <span class="a-brand-copy"><strong>PRINTCORE ACADEMY</strong><small data-ai18n="brandControl">CONTENT CONTROL</small></span>
+      </a>
+      <nav class="a-nav" aria-label="Academy navigation">
+        <a href="academy.html" data-ai18n="navStore">Academy</a>
+        <a href="my-library.html" data-ai18n="navLibrary">My Library</a>
+        <a href="commerce.html" data-ai18n="navBusiness">Business</a>
+        <div class="a-lang" role="group" aria-label="Language">
+          <button data-lang="ko" type="button">KO</button><button data-lang="en" type="button">EN</button><button data-lang="zh" type="button">中文</button>
+        </div>
+        <span id="academy-identity" class="a-sr"></span>
+        <button id="academy-login-button" class="a-auth" type="button" data-ai18n="navLogin">Sign in</button>
+        <button id="academy-logout-button" class="a-auth" type="button" data-ai18n="navLogout" hidden>Sign out</button>
+      </nav>
+    </div>
+  </header>
+
+  <div id="academy-setup-banner" class="a-setup-banner">
+    <div class="a-container"><span><b data-ai18n="setupTitle">Connection setup is required</b> — <span data-ai18n="setupLead">Set values first.</span></span><a href="README_보안형_콘텐츠판매_구축가이드.md" data-ai18n="setupLink">View guide</a></div>
+  </div>
+
+  <main id="admin-main" class="a-admin">
+    <div class="a-container">
+      <div class="a-head">
+        <div><p class="a-label" data-ai18n="adminKicker">ADMIN ONLY</p><h1 data-ai18n="adminTitle">Content upload and publication management</h1></div>
+        <p data-ai18n="adminLead">Only administrator accounts can upload PDF/video files to private storage and publish product information.</p>
+      </div>
+
+      <div id="academy-global-note" class="a-note" aria-live="polite"></div>
+
+      <!-- Shown before authenticated admin access is established. -->
+      <section id="admin-access" class="a-admin-auth-shell" aria-labelledby="admin-auth-title">
+        <div class="a-admin-auth-intro">
+          <p class="a-label" data-ai18n="adminAuthKicker">ADMIN AUTHENTICATION</p>
+          <h2 id="admin-auth-title" data-ai18n="adminAuthTitle">관리자 본인 인증</h2>
+          <p data-ai18n="adminAuthLead">등록된 관리자 계정으로 로그인한 뒤, 데이터베이스의 관리자 역할을 다시 확인합니다.</p>
+          <ul class="a-admin-auth-points">
+            <li data-ai18n="adminAuthPoint1">이메일·비밀번호 인증</li>
+            <li data-ai18n="adminAuthPoint2">Supabase profiles의 admin 역할 검증</li>
+            <li data-ai18n="adminAuthPoint3">검증 완료 후에만 비공개 파일 업로드 가능</li>
+          </ul>
+        </div>
+
+        <div class="a-admin-auth-card">
+          <div id="admin-signed-out-state">
+            <form id="admin-signin-form" novalidate>
+              <div class="a-field"><label for="admin-signin-email" data-ai18n="email">Email address</label><input id="admin-signin-email" type="email" autocomplete="username" required data-ai18n-placeholder="email"></div>
+              <div class="a-field"><label for="admin-signin-password" data-ai18n="adminPassword">Password</label><input id="admin-signin-password" type="password" autocomplete="current-password" required data-ai18n-placeholder="adminPassword"></div>
+              <label class="a-check"><input id="admin-show-password" type="checkbox"><span data-ai18n="adminShowPassword">Show password</span></label>
+              <button id="admin-signin-submit" class="a-button a-primary a-wide" type="submit" data-ai18n="adminSignIn">관리자 로그인</button>
+            </form>
+
+            <div class="a-auth-divider"><span data-ai18n="adminOr">또는</span></div>
+            <form id="admin-magic-form" novalidate>
+              <div class="a-field"><label for="admin-magic-email" data-ai18n="adminMagicEmail">관리자 이메일로 보안 링크 받기</label><input id="admin-magic-email" type="email" autocomplete="email" required data-ai18n-placeholder="email"></div>
+              <button id="admin-magic-submit" class="a-button a-dark a-wide" type="submit" data-ai18n="adminSendMagicLink">보안 로그인 링크 보내기</button>
+            </form>
+            <p class="a-auth-help" data-ai18n="adminPasswordHelp">관리자 계정은 Supabase Authentication에서 사전에 생성·인증되어야 합니다.</p>
+          </div>
+
+          <div id="admin-signed-in-state" hidden>
+            <p class="a-auth-state" data-ai18n="adminSignedIn">로그인된 계정</p>
+            <strong id="admin-session-email" class="a-session-email">—</strong>
+            <p id="admin-session-role" class="a-note" aria-live="polite"></p>
+            <button id="admin-signout-inline" class="a-button a-dark a-wide" type="button" data-ai18n="adminSignOutFromAdmin">다른 계정으로 로그인</button>
+          </div>
+          <p id="admin-access-message" class="a-note" aria-live="polite"></p>
+        </div>
+      </section>
+
+      <section id="admin-workspace" hidden>
+        <div class="a-admin-session-bar"><span class="a-admin-status-dot"></span><span data-ai18n="adminRoleVerified">관리자 권한 확인됨</span><strong id="admin-workspace-email"></strong></div>
+        <div class="a-admin-layout">
+          <div class="a-admin-card">
+            <h2 data-ai18n="productForm">Create / Edit Product</h2>
+            <div id="admin-product-list" class="a-upload-list"></div>
+            <p class="a-note" data-ai18n="adminSelectHint">Select an item to edit, or complete the form to create a new product.</p>
+          </div>
+          <div class="a-admin-card">
+            <form id="admin-product-form">
+              <input id="admin-product-id" type="hidden">
+              <div class="a-admin-grid">
+                <div class="a-field full"><label for="admin-slug" data-ai18n="productSlug">Product ID</label><input id="admin-slug" pattern="[a-z0-9-]+" required></div>
+                <div class="a-field"><label for="admin-kind" data-ai18n="productKind">Content type</label><select id="admin-kind"><option value="pdf">PDF</option><option value="video">Video</option><option value="membership">Membership</option></select></div>
+                <div class="a-field"><label for="admin-billing" data-ai18n="billingType">Payment / access model</label><select id="admin-billing"><option value="one_time">One time</option><option value="monthly_manual">30-day renewal</option></select></div>
+                <div class="a-field"><label for="admin-price" data-ai18n="price">Price</label><input id="admin-price" type="number" min="0" required></div>
+                <div class="a-field"><label for="admin-group" data-ai18n="membershipGroup">Membership group</label><input id="admin-group" placeholder="library / academy"></div>
+                <div class="a-field"><label for="admin-title-ko" data-ai18n="productTitleKo">Korean title</label><input id="admin-title-ko" required></div>
+                <div class="a-field"><label for="admin-title-en" data-ai18n="productTitleEn">English title</label><input id="admin-title-en" required></div>
+                <div class="a-field full"><label for="admin-title-zh" data-ai18n="productTitleZh">Chinese title</label><input id="admin-title-zh" required></div>
+                <div class="a-field"><label for="admin-desc-ko" data-ai18n="productDescKo">Korean description</label><textarea id="admin-desc-ko"></textarea></div>
+                <div class="a-field"><label for="admin-desc-en" data-ai18n="productDescEn">English description</label><textarea id="admin-desc-en"></textarea></div>
+                <div class="a-field full"><label for="admin-desc-zh" data-ai18n="productDescZh">Chinese description</label><textarea id="admin-desc-zh"></textarea></div>
+                <div class="a-field"><label for="admin-audience-ko">Audience (Korean)</label><input id="admin-audience-ko"></div>
+                <div class="a-field"><label for="admin-audience-en">Audience (English)</label><input id="admin-audience-en"></div>
+                <div class="a-field"><label for="admin-audience-zh">Audience (Chinese)</label><input id="admin-audience-zh"></div>
+                <div class="a-field"><label for="admin-sort">Sort</label><input id="admin-sort" type="number" value="100"></div>
+                <div class="a-field full"><label><input id="admin-publish" type="checkbox"> <span data-ai18n="publish">Publish for sale</span></label></div>
+              </div>
+              <div class="a-modal-actions"><button class="a-button a-primary" type="submit" data-ai18n="saveProduct">Save product</button><button class="a-button a-dark" id="admin-new-product" type="button" data-ai18n="adminNewProduct">New product</button></div>
+            </form>
+            <p id="admin-note" class="a-note" aria-live="polite"></p>
+          </div>
+        </div>
+
+        <div class="a-admin-layout" style="margin-top:24px">
+          <div class="a-admin-card">
+            <h2 data-ai18n="uploadTitle">Upload PDF / video</h2>
+            <form id="admin-upload-form">
+              <div class="a-field"><label for="admin-upload-product" data-ai18n="chooseProduct">Choose product</label><select id="admin-upload-product" required></select></div>
+              <div class="a-field"><label for="admin-upload-kind" data-ai18n="uploadKind">Upload type</label><select id="admin-upload-kind"><option value="pdf">Private PDF</option><option value="video">Private video lesson</option><option value="preview">Public preview image/PDF</option></select></div>
+              <div id="admin-lesson-fields" class="a-admin-grid">
+                <div class="a-field"><label for="admin-lesson-slug" data-ai18n="lessonSlug">Video lesson ID</label><input id="admin-lesson-slug" pattern="[a-z0-9-]+"></div>
+                <div class="a-field"><label for="admin-lesson-title" data-ai18n="lessonTitle">Lesson title</label><input id="admin-lesson-title"></div>
+              </div>
+              <div class="a-field"><label for="admin-file" data-ai18n="selectFile">Choose file</label><input id="admin-file" type="file" required></div>
+              <div class="a-modal-actions"><button class="a-button a-primary" type="submit" data-ai18n="upload">Upload to private storage</button></div>
+            </form>
+          </div>
+          <div class="a-admin-card">
+            <h2 data-ai18n="adminSecurityTitle">Secure upload rules</h2>
+            <p data-ai18n="adminSecurityText1">PDF and video source files are uploaded to the private academy-content bucket. Do not upload paid content to GitHub Pages or a public repository.</p>
+            <p data-ai18n="adminSecurityText2">Preview thumbnails and a limited preview PDF may use the separate public academy-previews bucket.</p>
+            <p><a class="a-preview-link" href="README_관리자_로그인_설정가이드.md" data-ai18n="adminSetupGuide">Open administrator sign-in setup guide ↗</a></p>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- General customer magic-link modal remains available from the header. -->
+  <div id="academy-login-modal" class="a-login-modal" role="dialog" aria-modal="true" aria-labelledby="academy-login-title">
+    <div class="a-modal-card">
+      <button id="academy-login-close" class="a-auth" type="button" data-ai18n="close">Close</button>
+      <h2 id="academy-login-title" data-ai18n="loginTitle">Sign in</h2>
+      <form id="academy-login-form"><div class="a-field"><label for="academy-login-email" data-ai18n="email">Email</label><input id="academy-login-email" type="email" required data-ai18n-placeholder="email"></div><div class="a-modal-actions"><button id="academy-login-submit" class="a-button a-primary" type="submit" data-ai18n="sendMagicLink">Send link</button></div></form>
+    </div>
+  </div>
+</body>
+</html>

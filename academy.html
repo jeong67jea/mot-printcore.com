@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="M.O.T. PrintCore Academy — secure technical PDF downloads and video courses.">
+  <meta name="robots" content="index,follow">
+  <title>M.O.T. PrintCore Academy | Secure Technical Content</title>
+  <link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/academy.css">
+  <script src="assets/js/academy-config.js"></script>
+  <script src="assets/js/academy-i18n.js"></script>
+  <script src="assets/js/mot-locale.js"></script>
+  <script src="assets/js/academy-ui.js"></script>
+  <script src="https://cdn.portone.io/v2/browser-sdk.js"></script>
+  <script type="module" src="assets/js/academy.js"></script>
+</head>
+<body data-academy-page="academy">
+<a class="a-skip" href="#main" data-ai18n="skip">Skip to content</a>
+<header class="a-header"><div class="a-container a-header-inner">
+  <a class="a-brand" href="academy.html"><span class="a-brand-mark">M.O.T.</span><span class="a-brand-copy"><strong>PRINTCORE ACADEMY</strong><small data-ai18n="brandSecure">SECURE TECHNICAL CONTENT</small></span></a>
+  <nav class="a-nav" aria-label="Primary">
+    <a href="academy.html" data-ai18n="navStore">Academy</a><a href="my-library.html" data-ai18n="navLibrary">My Library</a><a href="commerce.html" data-ai18n="navBusiness">Business &amp; Contracts</a><a class="a-nav-cta" href="admin-content.html" data-ai18n="navAdmin">Content Admin</a>
+    <div class="a-lang"><button data-lang="ko" type="button">KO</button><button data-lang="en" type="button">EN</button><button data-lang="zh" type="button">中文</button></div>
+    <span id="academy-identity" class="a-sr"></span><button id="academy-login-button" class="a-auth" data-ai18n="navLogin" type="button">Sign in</button><button id="academy-logout-button" class="a-auth" data-ai18n="navLogout" type="button" hidden>Sign out</button>
+  </nav>
+</div></header>
+<div id="academy-setup-banner" class="a-setup-banner"><div class="a-container"><span><b data-ai18n="setupTitle">Connection setup is required</b> — <span data-ai18n="setupLead">Set Supabase and payment channel values before use.</span></span><a href="README_보안형_콘텐츠판매_구축가이드.md" data-ai18n="setupLink">View setup guide</a></div></div>
+<main id="main">
+<section class="a-hero"><div class="a-container a-hero-inner"><div>
+  <p class="a-kicker" data-ai18n="heroKicker">M.O.T. PRINTCORE ACADEMY</p>
+  <h1 data-ai18n-html="heroTitle">Technical knowledge and training<br>delivered through <em>secure account access.</em></h1>
+  <p data-ai18n="heroLead">Technical-book PDFs, design-standard libraries and practical courses are connected to the purchaser’s account after payment.</p>
+  <div class="a-actions"><button class="a-button a-primary" data-scroll-catalog type="button" data-ai18n="heroPrimary">Browse content</button><a class="a-button a-ghost" href="my-library.html" data-academy-link="library" data-ai18n="heroSecondary">My Library</a></div>
+  <div class="a-meta-grid"><div><span>01</span><b data-ai18n="heroNote1">Before payment: account sign-in</b></div><div><span>02</span><b data-ai18n="heroNote2">After payment: server-side verification and entitlement</b></div><div><span>03</span><b data-ai18n="heroNote3">PDF: time-limited personal download link</b></div></div>
+</div><div class="a-hero-circuit" aria-hidden="true"><i class="a-spark a"></i><i class="a-spark b"></i><i class="a-spark c"></i><div class="a-secure-ring"></div><div class="a-lock">⌁</div><div class="a-flow"><div class="a-flow-item"><span>01</span><p data-ai18n-html="flow1">AUTH<br>ACCOUNT</p></div><div class="a-flow-item"><span>02</span><p data-ai18n-html="flow2">PAYMENT<br>VERIFY</p></div><div class="a-flow-item"><span>03</span><p data-ai18n-html="flow3">PRIVATE<br>ACCESS</p></div></div></div>
+</div></section>
+<section class="a-section alt"><div class="a-container"><div class="a-head"><div><p class="a-label" data-ai18n="valueLabel">ACCESS PRINCIPLES</p><h2 data-ai18n="valueTitle">Not a file sale — managed access to technical assets</h2></div><p data-ai18n="valueLead">Single-title purchases and time-based memberships are separated to protect the value of technical materials.</p></div><div class="a-value-grid"><article class="a-value"><span>01</span><h3 data-ai18n="value1Title">Account-based access</h3><p data-ai18n="value1Text">Magic-link sign-in connects purchases and subscription rights to each customer account.</p></article><article class="a-value"><span>02</span><h3 data-ai18n="value2Title">Private source storage</h3><p data-ai18n="value2Text">Original PDFs and training videos live in private storage, not in the public GitHub repository.</p></article><article class="a-value"><span>03</span><h3 data-ai18n="value3Title">Granted after payment verification</h3><p data-ai18n="value3Text">The server validates payment status and amount before issuing download or streaming rights.</p></article></div></div></section>
+<section id="academy-catalog-section" class="a-section soft"><div class="a-container"><div class="a-head"><div><p class="a-label" data-ai18n="catalogLabel">CONTENT CATALOG</p><h2 data-ai18n="catalogTitle">Technical publications and courses</h2></div><p data-ai18n="catalogLead">Check the outline, audience, version and access terms before payment.</p><div class="a-filter" aria-label="Content filters"><button data-filter="all" class="is-active" data-ai18n="filterAll">All</button><button data-filter="pdf" data-ai18n="filterPdf">Technical PDFs</button><button data-filter="video" data-ai18n="filterVideo">Video Courses</button><button data-filter="subscription" data-ai18n="filterSubscription">Libraries &amp; Memberships</button></div></div><div id="academy-catalog" class="a-catalog"></div><p id="academy-global-note" class="a-note" aria-live="polite"></p></div></section>
+</main>
+<footer class="a-footer"><div class="a-container a-footer-inner"><div><strong>M.O.T. PRINTCORE ACADEMY</strong><p data-ai18n="footer">M.O.T. PRINTCORE ENGINEERING · KNOWLEDGE ASSET · SECURE ACCESS</p></div><nav><a href="terms.html" data-ai18n="legalTerms">Terms</a><a href="privacy.html" data-ai18n="legalPrivacy">Privacy</a><a href="refund.html" data-ai18n="legalRefund">Refund &amp; Subscription Policy</a></nav></div></footer>
+<div id="academy-login-modal" class="a-login-modal" role="dialog" aria-modal="true" aria-labelledby="academy-login-heading"><div class="a-modal-card"><button id="academy-login-close" class="a-auth" type="button" data-ai18n="close">Close</button><p class="a-label" data-ai18n="accountAccess">ACCOUNT ACCESS</p><h2 id="academy-login-heading" data-ai18n="loginTitle">Sign in to PrintCore Academy</h2><p data-ai18n="loginLead">Purchases and subscriptions are attached to your email account.</p><form id="academy-login-form"><div class="a-field"><label for="academy-login-email" data-ai18n="email">Email address</label><input id="academy-login-email" type="email" required autocomplete="email" data-ai18n-placeholder="email"></div><div class="a-modal-actions"><button id="academy-login-submit" class="a-button a-primary" type="submit" data-ai18n="sendMagicLink">Send sign-in link</button></div></form></div></div>
+</body></html>

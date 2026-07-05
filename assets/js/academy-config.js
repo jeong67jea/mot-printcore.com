@@ -14,8 +14,8 @@ window.MOT_ACADEMY_CONFIG = {
   siteUrl: "https://jeong67jea.github.io/mot-printcore.com/",
 
   supabase: {
-    url: "https://abcdefghijklm.supabase.co",
-    anonKey: "sb_publishable_xxxxxxxxxxxxxxxxxxxxxxxxx"
+    url: "https://hxpjxebwpnepxcfighff.supabase.co,
+    anonKey: "sb_publishable_QjR0l4P0YS6qTtCBZ41Vng_J5tD3prN"
   },
 
   auth: {

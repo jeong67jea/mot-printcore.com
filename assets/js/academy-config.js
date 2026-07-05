@@ -1,65 +1,36 @@
 /*
-  M.O.T. PrintCore Academy — Public Browser Configuration
-  ----------------------------------------------------------------
-  This file is uploaded to GitHub Pages and is public.
-  ✅ Put only public values here: Supabase URL, anon/publishable key,
-     PortOne Store ID and Channel Key.
-  ❌ Never put any API Secret, service-role key, payment secret, billing key,
-     database password, or account login in this file.
-
-  Before release, replace every {{ ... }} value.
-*/
+ * M.O.T. PrintCore Academy — public browser configuration
+ * This file may contain ONLY the Supabase Project URL and Publishable (anon) key.
+ * NEVER place Database Password, service_role key, sb_secret key, or PortOne API Secret here.
+ */
 window.MOT_ACADEMY_CONFIG = {
-  brand: "M.O.T. PrintCore Academy",
   siteUrl: "https://jeong67jea.github.io/mot-printcore.com/",
 
   supabase: {
+    // Confirmed from the Supabase project overview screen.
     url: "https://hxpjxebwpnepxcfighff.supabase.co",
-    anonKey: "sb_publishable_QjR0l4P0YS6qTtCBZ41Vng_J5tD3prN"
-  },
 
-  auth: {
-    // Administrator login uses Supabase Auth email/password or a verified magic link.
-    // Keep registration closed on the public website. Create the admin user in Supabase Dashboard.
-    adminSignIn: "password_or_magic_link",
-    publicAdminSignup: false
+    // Paste the exact Supabase "Publishable key" here.
+    // It normally begins with sb_publishable_... (or may be a legacy anon JWT beginning with eyJ...).
+    anonKey: "PASTE_YOUR_SUPABASE_PUBLISHABLE_KEY_HERE",
+
+    // Keep this unchanged.
+    sdkUrl: "https://esm.sh/@supabase/supabase-js@2"
   },
 
   payment: {
-    provider: "PORTONE_V2",
-    testMode: true,
-    storeId: "{{ store-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx }}",
-    channelKey: "{{ channel-key-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx }}",
-    currency: "KRW"
-  },
-
-  storage: {
-    privateBucket: "academy-content",
-    previewBucket: "academy-previews",
-    signedUrlSeconds: 600
+    // Not required for administrator sign-in or content upload.
+    // Set these only when PortOne payment setup is completed.
+    storeId: "YOUR_PORTONE_STORE_ID",
+    channelKey: "YOUR_PORTONE_CHANNEL_KEY"
   },
 
   routes: {
     academy: "academy.html",
     library: "my-library.html",
     player: "player.html",
-    success: "payment-success.html",
-    failed: "payment-failed.html",
     admin: "admin-content.html",
-    terms: "terms.html",
-    privacy: "privacy.html",
-    refund: "refund.html",
-    commerce: "commerce.html"
-  },
-
-  contact: {
-    supportEmail: "{{ support@yourdomain.com }}",
-    privacyEmail: "{{ privacy@yourdomain.com }}"
-  },
-
-  security: {
-    allowDirectPdfDownload: true,
-    showAdminLink: false,
-    requireMagicLinkLogin: true
+    success: "payment-success.html",
+    failed: "payment-failed.html"
   }
 };

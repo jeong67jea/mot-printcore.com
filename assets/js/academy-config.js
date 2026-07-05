@@ -12,7 +12,7 @@ window.MOT_ACADEMY_CONFIG = {
 
     // Paste the exact Supabase "Publishable key" here.
     // It normally begins with sb_publishable_... (or may be a legacy anon JWT beginning with eyJ...).
-    anonKey: "PASTE_YOUR_SUPABASE_PUBLISHABLE_KEY_HERE",
+    anonKey: "sb_publishable_QjR0l4P0YS6qTtCBZ41Vng_J5tD3prN",
 
     // Keep this unchanged.
     sdkUrl: "https://esm.sh/@supabase/supabase-js@2"

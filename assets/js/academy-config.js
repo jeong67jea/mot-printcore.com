@@ -15,7 +15,7 @@ window.MOT_ACADEMY_CONFIG = {
     anonKey: "sb_publishable_QjR0l4P0YS6qTtCBZ41Vng_J5tD3prN",
 
     // Keep this unchanged.
-    sdkUrl: "https://esm.sh/@supabase/supabase-js@2"
+    sdkUrl: "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm"
   },
 
   payment: {

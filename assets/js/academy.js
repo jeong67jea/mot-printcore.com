@@ -226,6 +226,23 @@ async function invokeFunction(name, body) {
   if (error) throw error;
   return data;
 }
+
+async function notifyPurchaseRequest(requestId) {
+  if (!supabase || !requestId) return { ok: false, skipped: true };
+  try {
+    const { data, error } = await supabase.functions.invoke('notify-purchase-request', { body: { requestId } });
+    if (error) {
+      console.warn('[M.O.T. Academy] purchase notification failed:', error);
+      return { ok: false, error };
+    }
+    if (data && data.ok === false) console.warn('[M.O.T. Academy] purchase notification not sent:', data);
+    return data || { ok: true };
+  } catch (error) {
+    console.warn('[M.O.T. Academy] purchase notification exception:', error);
+    return { ok: false, error };
+  }
+}
+
 async function requestManualPurchase(product, user) {
   if (!supabase) throw new Error('Supabase is not configured');
   if (!product?.id) throw new Error('Product id is missing');
@@ -254,7 +271,11 @@ async function requestManualPurchase(product, user) {
   };
   const { data, error } = await supabase.from('purchase_requests').insert(row).select('id,status,created_at').single();
   if (error) throw error;
-  return { duplicate: false, request: data };
+
+  // Send an administrator email notification through a Supabase Edge Function.
+  // The purchase request itself is already saved, so email failure must not block the customer flow.
+  const notification = await notifyPurchaseRequest(data?.id);
+  return { duplicate: false, request: data, notification };
 }
 
 async function startPurchase(slug, button) {

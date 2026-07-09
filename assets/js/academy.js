@@ -45,6 +45,11 @@ function configured() {
 function configuredPayment() {
   return configured() && !isPlaceholder(CONFIG?.payment?.storeId) && !isPlaceholder(CONFIG?.payment?.channelKey);
 }
+function manualPurchaseEnabled() {
+  // Safe default: when PortOne is not fully configured, use a manual purchase-request workflow.
+  // Set CONFIG.payment.manualPurchase = false only after PortOne + Edge Functions are fully verified.
+  return CONFIG?.payment?.manualPurchase !== false;
+}
 let supabase = null;
 let resolveAcademyReady;
 const academyReady = new Promise((resolve) => { resolveAcademyReady = resolve; });
@@ -123,13 +128,8 @@ async function bindAuth() {
     if (!email) return;
     const submit = $('#academy-login-submit');
     submit.disabled = true; submit.textContent = t('sending');
-    // Admin-page sign-in must return to the admin page so the role check can run again.
-    // Public customer sign-in retains normal account creation behavior; only the admin path rejects unknown accounts.
-    const destination = PAGE === 'admin' ? (CONFIG.routes?.admin || 'admin-content.html') : (CONFIG.routes?.library || 'my-library.html');
-    const redirect = withLocale(destination);
-    const options = { emailRedirectTo: redirect };
-    if (PAGE === 'admin') options.shouldCreateUser = false;
-    const { error } = await supabase.auth.signInWithOtp({ email, options });
+    const redirect = withLocale(CONFIG.routes?.library || 'my-library.html');
+    const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: redirect } });
     submit.disabled = false; submit.textContent = t('sendMagicLink');
     if (error) toast(t('loginError'), 'error');
     else toast(t('magicSent'), 'success');
@@ -223,12 +223,65 @@ async function invokeFunction(name, body) {
   if (error) throw error;
   return data;
 }
+async function requestManualPurchase(product, user) {
+  if (!supabase) throw new Error('Supabase is not configured');
+  if (!product?.id) throw new Error('Product id is missing');
+
+  const openStatuses = ['requested', 'payment_pending', 'paid_confirmed'];
+  const { data: existing, error: lookupError } = await supabase
+    .from('purchase_requests')
+    .select('id,status,created_at')
+    .eq('user_id', user.id)
+    .eq('product_id', product.id)
+    .in('status', openStatuses)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (lookupError) throw lookupError;
+  if (existing) return { duplicate: true, request: existing };
+
+  const row = {
+    user_id: user.id,
+    product_id: product.id,
+    product_slug: product.slug,
+    customer_email: user.email,
+    price_krw: product.price_krw || 0,
+    status: 'requested',
+    request_note: `${valueLocalized(product, 'title', product.slug)} / ${formatMoney(product.price_krw)}`
+  };
+  const { data, error } = await supabase.from('purchase_requests').insert(row).select('id,status,created_at').single();
+  if (error) throw error;
+  return { duplicate: false, request: data };
+}
+
 async function startPurchase(slug, button) {
-  if (!configuredPayment()) { toast(t('setupLead'), 'error'); return; }
   const user = await requireLogin();
   if (!user) return;
+  const product = catalogProducts.find((item) => item.slug === slug);
+  if (!product) { toast(t('noProducts'), 'error'); return; }
+
   const original = button.innerHTML;
-  button.disabled = true; button.textContent = t('paymentPreparing');
+  button.disabled = true;
+
+  // Safe manual purchase request mode. This is the default until PortOne and all Edge Functions are verified.
+  if (manualPurchaseEnabled()) {
+    button.textContent = t('manualPurchasePreparing');
+    try {
+      const result = await requestManualPurchase(product, user);
+      const message = result.duplicate ? t('manualPurchaseDuplicate') : t('manualPurchaseRequested');
+      toast(`${message} ${t('manualPurchaseInstructions')}`, 'success');
+      button.textContent = result.duplicate ? t('manualPurchaseDuplicateShort') : t('manualPurchaseRequestedShort');
+      window.setTimeout(() => { button.disabled = false; button.innerHTML = original; }, 3500);
+    } catch (error) {
+      console.error(error);
+      toast(t('manualPurchaseError'), 'error');
+      button.disabled = false; button.innerHTML = original;
+    }
+    return;
+  }
+
+  if (!configuredPayment()) { toast(t('setupLead'), 'error'); button.disabled = false; button.innerHTML = original; return; }
+  button.textContent = t('paymentPreparing');
   try {
     const order = await invokeFunction('create-order', { productSlug: slug });
     if (!window.PortOne?.requestPayment) throw new Error('PortOne Browser SDK did not load');
@@ -368,4 +421,4 @@ document.addEventListener('mot:academy-languagechange', async (event) => {
 });
 document.addEventListener('DOMContentLoaded', bootstrap);
 
-export { supabase, academyReady, CONFIG, I18N, t, getUser, getSession, configured, configuredPayment, escapeHtml, valueLocalized, withLocale, locale };
+export { supabase, academyReady, CONFIG, I18N, t, getUser, getSession, configured, configuredPayment, manualPurchaseEnabled, escapeHtml, valueLocalized, withLocale, locale };

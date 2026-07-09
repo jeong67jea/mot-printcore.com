@@ -250,7 +250,7 @@ async function requestManualPurchase(product, user) {
   const openStatuses = ['requested', 'payment_pending', 'paid_confirmed'];
   const { data: existing, error: lookupError } = await supabase
     .from('purchase_requests')
-    .select('id,status,created_at')
+    .select('id,status,created_at,admin_notified_at,admin_notify_error')
     .eq('user_id', user.id)
     .eq('product_id', product.id)
     .in('status', openStatuses)
@@ -258,7 +258,12 @@ async function requestManualPurchase(product, user) {
     .limit(1)
     .maybeSingle();
   if (lookupError) throw lookupError;
-  if (existing) return { duplicate: true, request: existing };
+  if (existing) {
+    // Earlier versions returned immediately for duplicate/open requests, so administrator email was not retried.
+    // Retry notification when the request exists but has not been notified yet.
+    const notification = existing.admin_notified_at ? { ok: true, skipped: true, reason: 'already_notified' } : await notifyPurchaseRequest(existing.id);
+    return { duplicate: true, request: existing, notification };
+  }
 
   const row = {
     user_id: user.id,
@@ -269,7 +274,7 @@ async function requestManualPurchase(product, user) {
     status: 'requested',
     request_note: `${valueLocalized(product, 'title', product.slug)} / ${formatMoney(product.price_krw)}`
   };
-  const { data, error } = await supabase.from('purchase_requests').insert(row).select('id,status,created_at').single();
+  const { data, error } = await supabase.from('purchase_requests').insert(row).select('id,status,created_at,admin_notified_at,admin_notify_error').single();
   if (error) throw error;
 
   // Send an administrator email notification through a Supabase Edge Function.

@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>M.O.T. PrintCore Academy | Login Callback</title>
+  <style>
+    :root{--navy:#0b2239;--cyan:#47d4ec;--line:#c8ddea;--bg:#f4fbff;}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:var(--bg);font-family:Arial,'Malgun Gothic','Microsoft YaHei',sans-serif;color:var(--navy)}
+    .box{width:min(560px,calc(100% - 32px));background:#fff;border:1px solid var(--line);box-shadow:0 18px 55px rgba(11,34,57,.08);padding:34px;text-align:center}
+    .mark{display:inline-grid;place-items:center;width:48px;height:48px;border:2px solid var(--cyan);font-weight:900;letter-spacing:.06em;margin-bottom:18px}
+    h1{font-size:24px;margin:0 0 10px}.small{color:#60788c;line-height:1.7}.bar{height:4px;background:linear-gradient(90deg,var(--cyan),#0b2239);margin-top:24px;animation:pulse 1.2s infinite alternate}@keyframes pulse{from{opacity:.35}to{opacity:1}}
+  </style>
+</head>
+<body data-auth-callback="true">
+  <main class="box">
+    <div class="mark">M.O.T.</div>
+    <h1>로그인 인증 처리 중</h1>
+    <p class="small" id="auth-callback-note">이메일 인증 정보를 확인하고 있습니다. 잠시만 기다려 주세요.</p>
+    <div class="bar" aria-hidden="true"></div>
+  </main>
+  <script src="assets/js/academy-config.js"></script>
+  <script src="assets/js/auth-session-bridge.js"></script>
+</body>
+</html>

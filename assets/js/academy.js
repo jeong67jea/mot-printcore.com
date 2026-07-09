@@ -128,7 +128,10 @@ async function bindAuth() {
     if (!email) return;
     const submit = $('#academy-login-submit');
     submit.disabled = true; submit.textContent = t('sending');
-    const redirect = withLocale(CONFIG.routes?.library || 'my-library.html');
+    const callback = new URL(CONFIG.routes?.authCallback || 'auth-callback.html', location.href);
+    callback.searchParams.set('next', CONFIG.routes?.academy || 'academy.html');
+    callback.searchParams.set('lang', locale);
+    const redirect = callback.href;
     const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: redirect } });
     submit.disabled = false; submit.textContent = t('sendMagicLink');
     if (error) toast(t('loginError'), 'error');

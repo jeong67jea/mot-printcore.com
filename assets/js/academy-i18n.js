@@ -3,6 +3,7 @@ window.MOT_ACADEMY_I18N = {
   ko: {
     siteTag: "SECURE DIGITAL CONTENT · TECHNICAL LEARNING",
     navStore: "아카데미",
+    navContentView: "컨텐츠 보기",
     navLibrary: "내 라이브러리",
     navBusiness: "사업·계약",
     navLogin: "로그인",
@@ -125,6 +126,7 @@ window.MOT_ACADEMY_I18N = {
   en: {
     siteTag: "SECURE DIGITAL CONTENT · TECHNICAL LEARNING",
     navStore: "Academy",
+    navContentView: "View Content",
     navLibrary: "My Library",
     navBusiness: "Business & Contracts",
     navLogin: "Sign in",
@@ -247,6 +249,7 @@ window.MOT_ACADEMY_I18N = {
   zh: {
     siteTag: "安全数字内容 · 技术学习",
     navStore: "技术学院",
+    navContentView: "查看内容",
     navLibrary: "我的资料库",
     navBusiness: "业务·合同",
     navLogin: "登录",

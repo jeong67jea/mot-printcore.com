@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: https://jeong67jea.github.io/mot-printcore.com/sitemap.xml
+Sitemap: https://YOUR_GITHUB_USERNAME.github.io/YOUR_REPOSITORY_NAME/sitemap.xml

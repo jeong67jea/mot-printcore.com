@@ -557,5 +557,195 @@
 </main>
 <footer class="a-footer"><div class="a-container a-footer-inner"><div><strong>M.O.T. PRINTCORE ACADEMY</strong><p data-ai18n="footer">M.O.T. PRINTCORE ENGINEERING · KNOWLEDGE ASSET · SECURE ACCESS</p></div><nav><a href="terms.html" data-ai18n="legalTerms">Terms</a><a href="privacy.html" data-ai18n="legalPrivacy">Privacy</a><a href="refund.html" data-ai18n="legalRefund">Refund &amp; Subscription Policy</a></nav></div></footer>
 <div id="academy-login-modal" class="a-login-modal" role="dialog" aria-modal="true" aria-labelledby="academy-login-heading"><div class="a-modal-card"><button id="academy-login-close" class="a-auth" type="button" data-ai18n="close">Close</button><p class="a-label" data-ai18n="accountAccess">ACCOUNT ACCESS</p><h2 id="academy-login-heading" data-ai18n="loginTitle">Sign in to PrintCore Academy</h2><p data-ai18n="loginLead">Purchases and subscriptions are attached to your email account.</p><form id="academy-login-form"><div class="a-field"><label for="academy-login-email" data-ai18n="email">Email address</label><input id="academy-login-email" type="email" required autocomplete="email" data-ai18n-placeholder="email"></div><div class="a-modal-actions"><button id="academy-login-submit" class="a-button a-primary" type="submit" data-ai18n="sendMagicLink">Send sign-in link</button></div></form></div></div>
-<script src="assets/js/preview-language-bridge.js"></script>
+
+<script>
+/*
+  M.O.T. PrintCore Academy - Preview section language bridge
+  Purpose: Translate the manually inserted Technical Book Preview section when KO / EN / 中文 buttons are clicked.
+  Scope: #technical-book-previews only. It does not change the normal product catalog logic.
+*/
+(function () {
+  'use strict';
+
+  const SECTION_ID = 'technical-book-previews';
+  const SUPPORTED = ['ko', 'en', 'zh'];
+
+  const headerText = {
+    ko: {
+      label: 'Technical Book Preview',
+      title: '기술서적 Preview PDF',
+      description: '구매 전 책의 구성, 핵심 기술 범위, 적용 분야, 기술적 배경을 확인할 수 있는 홍보용 Preview 자료입니다.\n한국어판과 중국어판을 각각 제공합니다.',
+      noticeStrong: '안내:',
+      notice: 'Preview PDF는 기술서의 일부 내용을 소개하기 위한 자료입니다.\n상세 설계 기준, 정량 조건, 공정 Recipe, 검증 방법, 관리 기준은 정식 PDF 본문에 포함되어 있습니다.',
+      koButton: '한국어 Preview',
+      zhButton: '中文 Preview'
+    },
+    en: {
+      label: 'Technical Book Preview',
+      title: 'Technical Book Preview PDFs',
+      description: 'These public preview files allow customers to check the book structure, key technical scope, application fields, and technical background before purchase.\nKorean and Chinese preview versions are provided.',
+      noticeStrong: 'Notice:',
+      notice: 'Preview PDFs are promotional materials that introduce only part of each technical book.\nDetailed design standards, quantitative conditions, process recipes, verification methods, and control standards are included in the full paid PDF.',
+      koButton: 'Korean Preview',
+      zhButton: 'Chinese Preview'
+    },
+    zh: {
+      label: 'Technical Book Preview',
+      title: '技术书籍 Preview PDF',
+      description: '这是购买前可确认书籍结构、核心技术范围、应用领域和技术背景的公开 Preview 资料。\n分别提供韩文版和中文版。',
+      noticeStrong: '说明：',
+      notice: 'Preview PDF 是用于介绍技术书籍部分内容的资料。\n详细设计标准、定量条件、工艺 Recipe、验证方法和管理标准包含在正式 PDF 正文中。',
+      koButton: '韩文 Preview',
+      zhButton: '中文 Preview'
+    }
+  };
+
+  const books = [
+    { no:'01', koTitle:'자동현상제 보충 시스템 설계 기술서', koDesc:'ADR 구조, 현상제 보충 제어, 농도 안정화 설계에 대한 Preview입니다.', enTitle:'Auto Developer Replenishment System Design Guide', enDesc:'Preview of ADR structure, developer replenishment control, and density stabilization design.', zhTitle:'自动显影剂补给系统设计技术书', zhDesc:'关于 ADR 结构、显影剂补给控制及浓度稳定化设计的 Preview。' },
+    { no:'02', koTitle:'고지대 환경 전사 보정 기술서', koDesc:'고지대 환경에서 발생하는 전사 특성 변화와 보정 설계에 대한 Preview입니다.', enTitle:'High-Altitude Transfer Compensation Guide', enDesc:'Preview of transfer-characteristic changes and compensation design under high-altitude environments.', zhTitle:'高海拔环境下转印补偿技术书', zhDesc:'关于高海拔环境下转印特性变化及补偿设计的 Preview。' },
+    { no:'03', koTitle:'1성분 점핑 Magnetic Roller 설계 표준 기술서', koDesc:'1성분 점핑 현상 방식의 Magnetic Roller 설계 기준에 대한 Preview입니다.', enTitle:'One-Component Jumping Magnetic Roller Design Standard', enDesc:'Preview of Magnetic Roller design standards for one-component jumping development.', zhTitle:'单组分跳跃显影 Magnetic Roller 设计标准技术书', zhDesc:'关于单组分跳跃显影方式 Magnetic Roller 设计标准的 Preview。' },
+    { no:'04', koTitle:'1성분 현상 기술서', koDesc:'1성분 현상 시스템의 기본 원리, 설계 변수, 화상 품질 영향에 대한 Preview입니다.', enTitle:'One-Component Development Technology Guide', enDesc:'Preview of one-component development principles, design variables, and image-quality impact.', zhTitle:'单组分显影技术书', zhDesc:'关于单组分显影系统基本原理、设计变量及图像质量影响的 Preview。' },
+    { no:'05', koTitle:'Carrier 설계 표준 기술서', koDesc:'2성분 현상용 Carrier 입자, 자성 특성, 대전 특성 설계에 대한 Preview입니다.', enTitle:'Carrier Design Standard Guide', enDesc:'Preview of carrier particle, magnetic property, and charge-property design for two-component development.', zhTitle:'Carrier 设计标准技术书', zhDesc:'关于双组分显影用 Carrier 粒子、磁性特性及带电特性设计的 Preview。' },
+    { no:'06', koTitle:'Cleaning Blade 설계 표준 기술서', koDesc:'Cleaning Blade의 재료, 형상, 접촉 조건, 마모 및 Cleaning 성능에 대한 Preview입니다.', enTitle:'Cleaning Blade Design Standard Guide', enDesc:'Preview of cleaning-blade materials, geometry, contact conditions, wear, and cleaning performance.', zhTitle:'Cleaning Blade 设计标准技术书', zhDesc:'关于 Cleaning Blade 材料、形状、接触条件、磨耗及清洁性能的 Preview。' },
+    { no:'07', koTitle:'Carrier Developer Mechanism', koDesc:'Carrier 현상 메커니즘과 토너 대전, 현상 안정성 관계에 대한 Preview입니다.', enTitle:'Carrier Developer Mechanism', enDesc:'Preview of carrier development mechanisms and the relationship between toner charging and development stability.', zhTitle:'Carrier 显影 Mechanism', zhDesc:'关于 Carrier 显影机理、碳粉带电及显影稳定性关系的 Preview。' },
+    { no:'08', koTitle:'Auger Mark Mechanism', koDesc:'Auger 이송 구조에서 발생하는 농도 불균일, 주기성 화상 문제에 대한 Preview입니다.', enTitle:'Auger Mark Mechanism', enDesc:'Preview of density nonuniformity and periodic image defects caused by auger transport structures.', zhTitle:'Auger Mark 机制', zhDesc:'关于 Auger 输送结构中发生的浓度不均及周期性图像问题的 Preview。' },
+    { no:'09', koTitle:'CR 설계 표준 기술서', koDesc:'Charge Roller의 전기적 특성, 접촉 조건, 화상 품질 영향에 대한 Preview입니다.', enTitle:'CR Design Standard Guide', enDesc:'Preview of charge-roller electrical characteristics, contact conditions, and image-quality influence.', zhTitle:'CR 设计标准技术书', zhDesc:'关于 Charge Roller 电气特性、接触条件及图像质量影响的 Preview。' },
+    { no:'10', koTitle:'2성분 현상 설계 표준 기술서', koDesc:'2성분 현상 구조, Toner/Carrier 관계, T/D 제어에 대한 Preview입니다.', enTitle:'Two-Component Development Design Standard', enDesc:'Preview of two-component development structure, toner/carrier relationship, and T/D control.', zhTitle:'双组分显影设计标准技术书', zhDesc:'关于双组分显影结构、Toner/Carrier 关系及 T/D 控制的 Preview。' },
+    { no:'11', koTitle:'제도법 기준 설계 표준 기술서', koDesc:'기계 도면 작성 기준, 치수, 공차, 설계 표준화에 대한 Preview입니다.', enTitle:'Drawing Method and Design Standard Guide', enDesc:'Preview of mechanical drawing rules, dimensions, tolerances, and design standardization.', zhTitle:'制图法基准设计标准技术书', zhDesc:'关于机械图纸作成基准、尺寸、公差及设计标准化的 Preview。' },
+    { no:'12', koTitle:'DR 설계 표준 기술서', koDesc:'Developer Roller의 구조, 재료, 저항, 표면 특성 설계에 대한 Preview입니다.', enTitle:'DR Design Standard Guide', enDesc:'Preview of Developer Roller structure, materials, resistance, and surface-property design.', zhTitle:'DR 设计标准技术书', zhDesc:'关于 Developer Roller 结构、材料、电阻及表面特性设计的 Preview。' },
+    { no:'13', koTitle:'Edge Effect 발생 메커니즘 표준 기술서', koDesc:'화상 Edge 부위에서 발생하는 농도, 전계, 현상 불균일 메커니즘에 대한 Preview입니다.', enTitle:'Edge Effect Generation Mechanism Standard Guide', enDesc:'Preview of density, electric-field, and development nonuniformity mechanisms at image-edge areas.', zhTitle:'Edge Effect 发生机理标准技术书', zhDesc:'关于图像边缘部位浓度、电场及显影不均机理的 Preview。' },
+    { no:'14', koTitle:'Fuser Belt 설계 표준 기술서', koDesc:'Fuser Belt의 구조, 재료, 열특성, 내구 설계에 대한 Preview입니다.', enTitle:'Fuser Belt Design Standard Guide', enDesc:'Preview of fuser-belt structure, materials, thermal characteristics, and durability design.', zhTitle:'Fuser Belt 设计标准技术书', zhDesc:'关于 Fuser Belt 结构、材料、热特性及耐久设计的 Preview。' },
+    { no:'15', koTitle:'Paper Path 설계 표준 기술서', koDesc:'용지 이송 경로, Jam 방지, 곡률, Guide 설계에 대한 Preview입니다.', enTitle:'Paper Path Design Standard Guide', enDesc:'Preview of paper transport paths, jam prevention, curvature, and guide design.', zhTitle:'Paper Path 设计标准技术书', zhDesc:'关于纸张输送路径、防 Jam、曲率及 Guide 设计的 Preview。' },
+    { no:'16', koTitle:'OPC 제조 표준 기술서', koDesc:'OPC Drum의 제조 공정, 감광층, 전기적 특성에 대한 Preview입니다.', enTitle:'OPC Manufacturing Standard Guide', enDesc:'Preview of OPC Drum manufacturing processes, photosensitive layers, and electrical characteristics.', zhTitle:'OPC 制造标准技术书', zhDesc:'关于 OPC Drum 制造工艺、感光层及电气特性的 Preview。' },
+    { no:'17', koTitle:'고분자 재료 표준 기술서', koDesc:'프린터 부품에 사용되는 고분자 재료 특성과 설계 적용에 대한 Preview입니다.', enTitle:'Polymer Material Standard Guide', enDesc:'Preview of polymer material characteristics and design applications for printer components.', zhTitle:'高分子材料标准技术书', zhDesc:'关于打印机部件用高分子材料特性及设计应用的 Preview。' },
+    { no:'18', koTitle:'Heat Roller 제조 표준 기술서', koDesc:'Heat Roller 제조 공정, 표면 처리, 코팅 및 품질 관리에 대한 Preview입니다.', enTitle:'Heat Roller Manufacturing Standard Guide', enDesc:'Preview of heat-roller manufacturing processes, surface treatment, coating, and quality control.', zhTitle:'Heat Roller 制造标准技术书', zhDesc:'关于 Heat Roller 制造工艺、表面处理、涂层及品质管理的 Preview。' },
+    { no:'19', koTitle:'Magnetic Roller 설계 표준 기술서', koDesc:'Magnetic Roller의 자력 분포, Sleeve, Core 설계 기준에 대한 Preview입니다.', enTitle:'Magnetic Roller Design Standard Guide', enDesc:'Preview of Magnetic Roller magnetic-force distribution, sleeve, and core design standards.', zhTitle:'Magnetic Roller 设计标准技术书', zhDesc:'关于 Magnetic Roller 磁力分布、Sleeve 及 Core 设计标准的 Preview。' },
+    { no:'20', koTitle:'PI Belt 제조 표준 기술서', koDesc:'PI Belt의 재료, 성형, Imide화, 코팅 공정에 대한 Preview입니다.', enTitle:'PI Belt Manufacturing Standard Guide', enDesc:'Preview of PI Belt materials, forming, imidization, and coating processes.', zhTitle:'PI Belt 制造标准技术书', zhDesc:'关于 PI Belt 材料、成形、Imide 化及涂层工艺的 Preview。' },
+    { no:'21', koTitle:'Static Electricity Offset 발생 메커니즘 기술서', koDesc:'정전기성 Offset의 발생 원리, 재료 및 공정 영향에 대한 Preview입니다.', enTitle:'Static Electricity Offset Generation Mechanism Guide', enDesc:'Preview of static-electricity offset generation principles and material/process influences.', zhTitle:'Static Electricity Offset 发生机理技术书', zhDesc:'关于静电性 Offset 发生原理、材料及工艺影响的 Preview。' },
+    { no:'22', koTitle:'실리콘 고무 발포 설계 표준 제조공정 기술서', koDesc:'실리콘 고무 발포 구조, Cell 제어, 제조 조건에 대한 Preview입니다.', enTitle:'Silicone Rubber Foaming Design and Process Standard Guide', enDesc:'Preview of silicone-rubber foaming structure, cell control, and manufacturing conditions.', zhTitle:'硅橡胶发泡设计标准制造工艺技术书', zhDesc:'关于硅橡胶发泡结构、Cell 控制及制造条件的 Preview。' },
+    { no:'23', koTitle:'Silicon Rubber Foaming 제조공정 기술서', koDesc:'Silicone Rubber Foaming 제조 공정 조건과 품질 관리에 대한 Preview입니다.', enTitle:'Silicone Rubber Foaming Manufacturing Process Guide', enDesc:'Preview of silicone-rubber foaming process conditions and quality control.', zhTitle:'Silicone Rubber Foaming 制造工艺技术书', zhDesc:'关于 Silicone Rubber Foaming 制造工艺条件及品质管理的 Preview。' },
+    { no:'24', koTitle:'White Spot 발생 메커니즘 기술서', koDesc:'White Spot 화상 결함의 발생 원리와 설계/공정 영향에 대한 Preview입니다.', enTitle:'White Spot Generation Mechanism Guide', enDesc:'Preview of White Spot image-defect generation principles and design/process influences.', zhTitle:'White Spot 发生机理技术书', zhDesc:'关于 White Spot 图像缺陷发生原理及设计/工艺影响的 Preview。' },
+    { no:'25', koTitle:'Transfer Roller 설계 표준 제조공정 기술서', koDesc:'Transfer Roller의 전기적 특성, 재료, 제조 공정에 대한 Preview입니다.', enTitle:'Transfer Roller Design Standard and Manufacturing Process Guide', enDesc:'Preview of Transfer Roller electrical characteristics, materials, and manufacturing processes.', zhTitle:'Transfer Roller 设计标准制造工艺技术书', zhDesc:'关于 Transfer Roller 电气特性、材料及制造工艺的 Preview。' },
+    { no:'26', koTitle:'고무 부품 설계 표준 제조공정 기술서', koDesc:'고무 부품의 재료, 경도, 치수, 제조 공정 설계에 대한 Preview입니다.', enTitle:'Rubber Parts Design Standard and Manufacturing Process Guide', enDesc:'Preview of rubber-part material, hardness, dimensions, and manufacturing-process design.', zhTitle:'橡胶部件设计标准制造工艺技术书', zhDesc:'关于橡胶部件材料、硬度、尺寸及制造工艺设计的 Preview。' },
+    { no:'27', koTitle:'토너 대전량 측정 표준서', koDesc:'토너 대전량 측정 원리, 측정 조건, 표준화 방법에 대한 Preview입니다.', enTitle:'Toner Charge Measurement Standard', enDesc:'Preview of toner charge-measurement principles, measurement conditions, and standardization methods.', zhTitle:'碳粉带电量测量标准书', zhDesc:'关于碳粉带电量测量原理、测量条件及标准化方法的 Preview。' },
+    { no:'28', koTitle:'토너 정착성 수지 설계 기술서', koDesc:'토너 수지 설계와 정착성, 열특성, Offset 특성에 대한 Preview입니다.', enTitle:'Toner Fusing Resin Design Guide', enDesc:'Preview of toner resin design, fusing performance, thermal characteristics, and offset characteristics.', zhTitle:'碳粉定影性树脂设计技术书', zhDesc:'关于碳粉树脂设计、定影性、热特性及 Offset 特性的 Preview。' },
+    { no:'29', koTitle:'토너 소모량 영향 요인 분석 기술서', koDesc:'토너 소모량에 영향을 주는 설계, 화상, 공정 요인에 대한 Preview입니다.', enTitle:'Toner Consumption Factor Analysis Guide', enDesc:'Preview of design, image, and process factors affecting toner consumption.', zhTitle:'碳粉消耗量影响因素分析技术书', zhDesc:'关于影响碳粉消耗量的设计、图像及工艺因素的 Preview。' },
+    { no:'30', koTitle:'분쇄 토너 설계 표준 제조공학 기술서', koDesc:'분쇄 토너의 조성, 제조 공정, 입도 및 외첨 설계에 대한 Preview입니다.', enTitle:'Pulverized Toner Design Standard and Manufacturing Engineering Guide', enDesc:'Preview of pulverized-toner formulation, manufacturing process, particle size, and external-additive design.', zhTitle:'粉碎碳粉设计标准制造工程技术书', zhDesc:'关于粉碎碳粉组成、制造工艺、粒度及外添设计的 Preview。' },
+    { no:'31', koTitle:'중합 토너 입자 설계 표준 제조공학 기술서', koDesc:'중합 토너 입자 설계, 중합 공정, 입자 제어에 대한 Preview입니다.', enTitle:'Polymerized Toner Particle Design Standard and Manufacturing Engineering Guide', enDesc:'Preview of polymerized-toner particle design, polymerization process, and particle control.', zhTitle:'聚合碳粉粒子设计标准制造工程技术书', zhDesc:'关于聚合碳粉粒子设计、聚合工艺及粒子控制的 Preview。' },
+    { no:'32', koTitle:'현상 Layout 설계 표준 기술서', koDesc:'현상기 Layout, OPC/DR/MR 배치, Gap 및 각도 설계에 대한 Preview입니다.', enTitle:'Development Layout Design Standard Guide', enDesc:'Preview of development-unit layout, OPC/DR/MR arrangement, gap, and angle design.', zhTitle:'显影 Layout 设计标准技术书', zhDesc:'关于显影器 Layout、OPC/DR/MR 配置、Gap 及角度设计的 Preview。' },
+    { no:'33', koTitle:'OPC 설계 표준서 기술서', koDesc:'OPC Drum의 전기적, 광학적, 기계적 설계 기준에 대한 Preview입니다.', enTitle:'OPC Design Standard Guide', enDesc:'Preview of electrical, optical, and mechanical design standards for OPC Drum.', zhTitle:'OPC 设计标准书技术书', zhDesc:'关于 OPC Drum 电气、光学及机械设计标准的 Preview。' }
+  ];
+
+  function normalizeLang(value) {
+    const raw = String(value || '').toLowerCase();
+    if (raw.startsWith('zh') || raw === 'cn' || raw === 'chinese') return 'zh';
+    if (raw.startsWith('en')) return 'en';
+    return 'ko';
+  }
+
+  function getUrlLang() {
+    try { return new URLSearchParams(window.location.search).get('lang'); }
+    catch (_) { return null; }
+  }
+
+  function getStoredLang() {
+    try {
+      return localStorage.getItem('mot-lang') || localStorage.getItem('academy-lang') || localStorage.getItem('lang');
+    } catch (_) {
+      return null;
+    }
+  }
+
+  function getCurrentLang(explicitLang) {
+    return normalizeLang(explicitLang || getUrlLang() || getStoredLang() || document.documentElement.lang || 'ko');
+  }
+
+  function setTextPreserveBreaks(el, value) {
+    if (!el) return;
+    el.textContent = value || '';
+  }
+
+  function applyPreviewLanguage(lang) {
+    const section = document.getElementById(SECTION_ID);
+    if (!section) return;
+
+    const current = normalizeLang(lang);
+    const h = headerText[current] || headerText.ko;
+
+    setTextPreserveBreaks(section.querySelector('.preview-label'), h.label);
+    setTextPreserveBreaks(section.querySelector('.preview-header h2'), h.title);
+    setTextPreserveBreaks(section.querySelector('.preview-description'), h.description);
+
+    const notice = section.querySelector('.preview-notice');
+    if (notice) {
+      notice.innerHTML = '<strong></strong> <span></span>';
+      notice.querySelector('strong').textContent = h.noticeStrong;
+      notice.querySelector('span').textContent = h.notice;
+    }
+
+    const cards = Array.from(section.querySelectorAll('.preview-card'));
+    cards.forEach((card, index) => {
+      const book = books[index];
+      if (!book) return;
+      const no = card.querySelector('.book-no');
+      const title = card.querySelector('h3');
+      const desc = card.querySelector('p');
+      const buttons = card.querySelectorAll('.preview-buttons a');
+      if (no) no.textContent = book.no;
+      if (title) title.textContent = current === 'en' ? book.enTitle : current === 'zh' ? book.zhTitle : book.koTitle;
+      if (desc) desc.textContent = current === 'en' ? book.enDesc : current === 'zh' ? book.zhDesc : book.koDesc;
+      if (buttons[0]) buttons[0].textContent = h.koButton;
+      if (buttons[1]) buttons[1].textContent = h.zhButton;
+    });
+
+    section.setAttribute('data-preview-lang', current);
+  }
+
+  function applySoon(lang) {
+    applyPreviewLanguage(lang);
+    window.setTimeout(() => applyPreviewLanguage(lang), 0);
+    window.setTimeout(() => applyPreviewLanguage(lang), 150);
+  }
+
+  function bindLanguageButtons() {
+    document.querySelectorAll('[data-lang]').forEach((button) => {
+      button.addEventListener('click', function () {
+        const selected = normalizeLang(button.getAttribute('data-lang'));
+        try { localStorage.setItem('mot-lang', selected); } catch (_) {}
+        applySoon(selected);
+      });
+    });
+  }
+
+  function init() {
+    applySoon(getCurrentLang());
+    bindLanguageButtons();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+  // Main academy language controller dispatches this event whenever KO / EN / 中文 changes.
+  document.addEventListener('mot:localechange', function (event) {
+    applySoon(event.detail && event.detail.locale ? event.detail.locale : (window.MOTLocale && window.MOTLocale.get ? window.MOTLocale.get() : 'ko'));
+  });
+  document.addEventListener('mot:academy-languagechange', function (event) {
+    applySoon(event.detail && event.detail.locale ? event.detail.locale : (window.MOTAcademyUI && window.MOTAcademyUI.getLocale ? window.MOTAcademyUI.getLocale() : 'ko'));
+  });
+  if (window.MOTLocale && typeof window.MOTLocale.subscribe === 'function') {
+    window.MOTLocale.subscribe(function (locale) { applySoon(locale); });
+  }
+  window.addEventListener('popstate', function () {
+    applySoon(window.MOTLocale && window.MOTLocale.get ? window.MOTLocale.get() : getCurrentLang());
+  });
+  window.addEventListener('storage', function () {
+    applySoon(window.MOTLocale && window.MOTLocale.get ? window.MOTLocale.get() : getCurrentLang());
+  });
+  window.MOTApplyPreviewLanguage = applyPreviewLanguage;
+})();
+
+</script>
 </body></html>

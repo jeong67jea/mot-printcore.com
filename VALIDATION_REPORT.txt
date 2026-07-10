@@ -1,0 +1,3 @@
+HTML files: 27
+Validation issues: 0
+No missing local links detected.

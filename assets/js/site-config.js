@@ -9,4 +9,6 @@ window.MOT_CONFIG = {
   phoneLink: "+821075020845",
   wechat: "choijjai",
   siteUrl: "https://jeong67jea.github.io/mot-printcore.com/"
+  location: "Korea · China Technical Collaboration",
+  projectSubjectPrefix: "[M.O.T. Project Inquiry]"
 };

@@ -1,22 +1,33 @@
 (function () {
   'use strict';
 
-  const C = window.MOT_COMMERCE_CONFIG || {
-    company: {}, policy: {}, checkouts: {}, offers: { b2b: [], content: [] }
-  };
+  const C = window.MOT_COMMERCE_CONFIG;
   const D = window.MOT_COMMERCE_I18N || {};
-  if (!D.ko) return;
+  if (!C || !D.ko) return;
 
   const SUPPORTED = ['ko', 'en', 'zh'];
-  const sharedLocale = window.MOTLocale;
   const PAGE = document.body.dataset.commercePage || 'commerce';
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
-  const isPlaceholder = (value) => !value || /\{\{|YOUR_|example\.com/i.test(String(value));
+  const isPlaceholder = (value) => {
+    const text = String(value ?? '').trim();
+    return !text || text === '#' || /^javascript:/i.test(text) || /\{\{|YOUR_|example\.com/i.test(text);
+  };
+
+  // 멤버십 버튼이 상품/결제 URL이 아니라 academy.html 소개 화면으로
+  // 잘못 연결된 경우 이동을 차단하고 '결제 운영' 안내로 처리합니다.
+  const isInvalidCheckout = (item, value) => {
+    if (isPlaceholder(value)) return true;
+    const text = String(value).trim();
+    if (item.checkoutKey === 'academyMembership' && /(^|\/)academy\.html(?:[?#]|$)/i.test(text)) {
+      return true;
+    }
+    return false;
+  };
   const safe = (value) => String(value ?? '').replace(/[&<>'"]/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[m]));
 
   const urlLocale = new URLSearchParams(window.location.search).get('lang');
-  let locale = sharedLocale ? sharedLocale.init() : (SUPPORTED.includes(urlLocale) ? urlLocale : (localStorage.getItem('mot-locale') || 'ko'));
+  let locale = SUPPORTED.includes(urlLocale) ? urlLocale : (localStorage.getItem('mot-locale') || 'ko');
   if (!SUPPORTED.includes(locale)) locale = 'ko';
 
   const t = (key) => (D[locale] && Object.prototype.hasOwnProperty.call(D[locale], key) ? D[locale][key] : (D.ko[key] || key));
@@ -32,7 +43,6 @@
   function setPageMetadata() {
     document.documentElement.lang = locale === 'zh' ? 'zh-CN' : locale;
     document.documentElement.dataset.locale = locale;
-    sharedLocale?.propagate(locale);
     const title = D[locale]?.pageTitles?.[PAGE] || D.ko.pageTitles?.[PAGE] || document.title;
     document.title = title;
     const description = D[locale]?.meta?.[PAGE] || D.ko.meta?.[PAGE];
@@ -71,8 +81,7 @@
     const grid = $('#b2b-offers');
     if (!grid) return;
     const vatText = C.policy.priceBasis === 'VAT_INCLUSIVE' ? t('vatIncluded') : t('vatExclusive');
-    const offers = C.offers?.b2b || [];
-    grid.innerHTML = offers.map((rawOffer, index) => {
+    grid.innerHTML = C.offers.b2b.map((rawOffer, index) => {
       const offer = localOffer('b2b', rawOffer.code, rawOffer);
       return `
         <article class="offer-card ${index === 2 ? 'offer-card-featured' : ''}">
@@ -90,11 +99,10 @@
   function renderContent() {
     const grid = $('#content-offers');
     if (!grid) return;
-    const items = C.offers?.content || [];
-    grid.innerHTML = items.map((rawItem, index) => {
+    grid.innerHTML = C.offers.content.map((rawItem, index) => {
       const item = localOffer('content', rawItem.sku, rawItem);
       const url = C.checkouts[rawItem.checkoutKey];
-      const inactive = isPlaceholder(url);
+      const inactive = isInvalidCheckout(rawItem, url);
       return `
         <article class="content-card ${index === 3 ? 'content-card-featured' : ''}">
           <div class="content-label">${safe(item.kind)}</div>
@@ -149,21 +157,15 @@
 
   function bindLanguageButtons() {
     $$('.commerce-lang-btn').forEach((button) => {
-      if (button.dataset.localeBound === 'true') return;
-      button.dataset.localeBound = 'true';
-      button.type = 'button';
       button.addEventListener('click', () => {
         const requested = button.dataset.commerceLang;
         if (!SUPPORTED.includes(requested)) return;
-        if (sharedLocale) sharedLocale.set(requested);
-        else {
-          locale = requested;
-          localStorage.setItem('mot-locale', locale);
-          const current = new URL(window.location.href);
-          current.searchParams.set('lang', locale);
-          history.replaceState(null, '', current);
-          render();
-        }
+        locale = requested;
+        localStorage.setItem('mot-locale', locale);
+        const current = new URL(window.location.href);
+        current.searchParams.set('lang', locale);
+        history.replaceState(null, '', current);
+        render();
       });
     });
   }
@@ -190,12 +192,5 @@
     configureFormMail();
     bindLanguageButtons();
     bindUnconfiguredCheckout();
-    if (sharedLocale) {
-      sharedLocale.subscribe((next) => {
-        if (!SUPPORTED.includes(next)) return;
-        locale = next;
-        render();
-      });
-    }
   });
 })();

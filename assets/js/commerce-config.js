@@ -9,15 +9,15 @@
 window.MOT_COMMERCE_CONFIG = {
   company: {
     brand: "M.O.T. Technology Innovation Lab",
-    legalName: "{{ 사업자등록상 상호 }}",
-    representative: "{{ 대표자 성명 }}",
-    businessRegistrationNo: "{{ 사업자등록번호 }}",
-    mailOrderRegistrationNo: "{{ 통신판매업 신고번호 }}",
-    address: "{{ 사업장 소재지 }}",
-    customerServiceEmail: "{{ 공개용 고객지원 이메일 }}",
-    billingEmail: "{{ 세금계산서·견적 이메일 }}",
-    privacyOfficer: "{{ 개인정보 보호책임자 }}",
-    privacyEmail: "{{ 개인정보 문의 이메일 }}"
+    legalName: "엠오티(M.O.T)",
+    representative: "최정재",
+    businessRegistrationNo: "642-91-00194",
+    mailOrderRegistrationNo: "525101",
+    address: "saeunro 126 Yongin-city Gyeonggi-do south Korea",
+    customerServiceEmail: "choijjai42@gmail.com",
+    billingEmail: "choijjai42@gmail.com",
+    privacyOfficer: "jeongjae choi",
+    privacyEmail: "choijjai42@gmail.com"
   },
 
   policy: {
@@ -25,8 +25,8 @@ window.MOT_COMMERCE_CONFIG = {
     priceBasis: "VAT_EXCLUSIVE", // VAT_EXCLUSIVE | VAT_INCLUSIVE
     domesticCheckoutLabel: "국내 결제",
     globalCheckoutLabel: "International checkout",
-    serviceInquiryEmail: "{{ 공개용 고객지원 이메일 }}",
-    contentSupportEmail: "{{ 공개용 고객지원 이메일 }}"
+    serviceInquiryEmail: "choijjai42@gmail.com",
+    contentSupportEmail: "choijjai42@gmail.com"
   },
 
   /*

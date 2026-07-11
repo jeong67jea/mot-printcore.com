@@ -329,8 +329,34 @@
         </div>
 
         <form class="project-form reveal" id="project-form" novalidate>
+  <div
+  aria-hidden="true"
+  style="position:absolute;left:-10000px;
+         width:1px;height:1px;overflow:hidden"
+>
+  <label>
+    Website
+    <input
+      type="text"
+      name="website"
+      tabindex="-1"
+      autocomplete="off"
+    />
+  </label>
+</div>
           <div class="form-title"><span>PROJECT BRIEF</span><b data-i18n="formTitle">프로젝트 개요를 간단히 작성해 주세요.</b></div>
-          <div class="form-two"><label><span data-i18n="formName">회사명 / 담당자</span><input type="text" name="name" required placeholder="Company / Name" /></label><label><span data-i18n="formRegion">국가 / 지역</span><input type="text" name="region" placeholder="Korea / China / Other" /></label></div>
+          <div class="form-two"><label><span data-i18n="formName">회사명 / 담당자</span><input type="text" name="name" required placeholder="Company / Name" /></label>
+          <label><span data-i18n="formRegion">국가 / 지역</span><input type="text" name="region" placeholder="Korea / China / Other" /></label></div>
+  <label>
+  <span>회신 받을 이메일</span>
+  <input
+    type="email"
+    name="email"
+    required
+    autocomplete="email"
+    placeholder="name@example.com"
+  />
+</label>
           <label><span data-i18n="formProduct">대상 제품 또는 부품</span><input type="text" name="product" required placeholder="e.g. Developer Roller, PFA Tube" /></label>
           <label><span data-i18n="formIssue">현재 문제 및 목표</span><textarea name="issue" rows="5" required placeholder="Problem, current condition, target, schedule"></textarea></label>
           <div class="form-actions"><button type="submit" class="button button-primary button-full" data-i18n-html="formSend">이메일 문의 초안 만들기 <span>↗</span></button><button type="button" class="copy-brief" id="copy-brief" data-i18n="formCopy">문의 내용 복사</button></div>

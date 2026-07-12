@@ -117,7 +117,8 @@ async function bindAuth() {
   });
   const form = $('#academy-login-form');
 
-  // 로그인 결과를 모달 안에 표시하는 전용 메시지 영역
+  // 로그인 모달 내부에서 전송 상태와 결과를 확인할 수 있는 메시지 영역입니다.
+  // academy.html은 변경하지 않고 academy.js가 자동으로 생성합니다.
   let loginNote = $('#academy-login-note');
   if (form && !loginNote) {
     loginNote = document.createElement('p');
@@ -127,34 +128,19 @@ async function bindAuth() {
     form.appendChild(loginNote);
   }
 
-  const loginStatusText = {
-    ko: {
-      sending: '로그인 링크를 요청하고 있습니다...',
-      success: '정상적으로 요청되었습니다. 입력한 이메일로 로그인 링크를 보냈습니다.',
-      error: '로그인 링크 요청에 실패했습니다. 이메일 주소를 확인한 뒤 다시 시도해 주세요.'
-    },
-    en: {
-      sending: 'Requesting your sign-in link...',
-      success: 'Your request was successful. A sign-in link was sent to the email address you entered.',
-      error: 'The sign-in link request failed. Check the email address and try again.'
-    },
-    zh: {
-      sending: '正在请求登录链接...',
-      success: '请求成功。登录链接已发送到您输入的邮箱。',
-      error: '登录链接请求失败。请检查邮箱地址后重试。'
-    }
+  const loginText = (key, fallbackKey) => {
+    const value = t(key);
+    return value === key ? t(fallbackKey) : value;
   };
 
-  function setLoginNote(message, state = '') {
+  const setLoginNote = (message, state = '') => {
     if (!loginNote) return;
     loginNote.textContent = message;
     loginNote.className = `a-note ${state}`.trim();
-  }
+  };
 
   form?.addEventListener('submit', async (event) => {
     event.preventDefault();
-
-    const messages = loginStatusText[locale] || loginStatusText.ko;
 
     if (!supabase) {
       setLoginNote(t('setupLead'), 'error');
@@ -171,9 +157,9 @@ async function bindAuth() {
       submit.textContent = t('sending');
     }
 
-    setLoginNote(messages.sending);
+    setLoginNote(loginText('loginSending', 'sending'));
 
-    // 기존 로그인 메일 발송 절차를 그대로 유지
+    // 기존 절차 유지: 입력한 구매자 이메일로 Supabase 로그인 링크를 발송합니다.
     const redirect = withLocale(CONFIG.routes?.library || 'my-library.html');
     const { error } = await supabase.auth.signInWithOtp({
       email,
@@ -187,13 +173,13 @@ async function bindAuth() {
 
     if (error) {
       console.error('[M.O.T. Academy] Magic-link request failed:', error);
-      setLoginNote(`${messages.error} (${error.message || 'Unknown error'})`, 'error');
+      setLoginNote(loginText('loginFailed', 'loginError'), 'error');
       toast(t('loginError'), 'error');
       return;
     }
 
-    // 성공 메시지를 모달 안에 표시하고, 기존 공통 알림도 유지
-    setLoginNote(messages.success, 'success');
+    // 모달 안 성공 메시지와 기존 공통 성공 알림을 모두 유지합니다.
+    setLoginNote(loginText('loginSuccess', 'magicSent'), 'success');
     toast(t('magicSent'), 'success');
   });
 }

@@ -1,0 +1,25 @@
+{
+  "name": "MOT PrintCore e-book 결제 안내",
+  "short_name": "MOT 결제안내",
+  "description": "MOT PrintCore e-book 주문정보 입력 및 결제 안내 도구",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#eef2f0",
+  "theme_color": "#07c160",
+  "lang": "ko-KR",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

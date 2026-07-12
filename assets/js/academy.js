@@ -45,6 +45,11 @@ function configured() {
 function configuredPayment() {
   return configured() && !isPlaceholder(CONFIG?.payment?.storeId) && !isPlaceholder(CONFIG?.payment?.channelKey);
 }
+function manualPurchaseEnabled() {
+  // Safe default: when PortOne is not fully configured, use a manual purchase-request workflow.
+  // Set CONFIG.payment.manualPurchase = false only after PortOne + Edge Functions are fully verified.
+  return CONFIG?.payment?.manualPurchase !== false;
+}
 let supabase = null;
 let resolveAcademyReady;
 const academyReady = new Promise((resolve) => { resolveAcademyReady = resolve; });
@@ -115,10 +120,10 @@ async function bindAuth() {
   $('#academy-login-modal')?.addEventListener('click', (event) => {
     if (event.target.id === 'academy-login-modal') closeLogin();
   });
+
   const form = $('#academy-login-form');
 
-  // 로그인 모달 내부에서 전송 상태와 결과를 확인할 수 있는 메시지 영역입니다.
-  // academy.html은 변경하지 않고 academy.js가 자동으로 생성합니다.
+  // 기존 로그인 입력창은 그대로 사용하고, 결과 메시지 영역만 동적으로 추가합니다.
   let loginNote = $('#academy-login-note');
   if (form && !loginNote) {
     loginNote = document.createElement('p');
@@ -141,7 +146,6 @@ async function bindAuth() {
 
   form?.addEventListener('submit', async (event) => {
     event.preventDefault();
-
     if (!supabase) {
       setLoginNote(t('setupLead'), 'error');
       toast(t('setupLead'), 'error');
@@ -156,11 +160,15 @@ async function bindAuth() {
       submit.disabled = true;
       submit.textContent = t('sending');
     }
-
     setLoginNote(loginText('loginSending', 'sending'));
 
-    // 기존 절차 유지: 입력한 구매자 이메일로 Supabase 로그인 링크를 발송합니다.
-    const redirect = withLocale(CONFIG.routes?.library || 'my-library.html');
+    // 기존 운영 로직 유지: auth-callback.html을 거쳐 원래 Academy 화면으로 복귀합니다.
+    const callback = new URL(CONFIG.routes?.authCallback || 'auth-callback.html', location.href);
+    callback.searchParams.set('next', CONFIG.routes?.academy || 'academy.html');
+    callback.searchParams.set('lang', locale);
+    const redirect = callback.href;
+
+    // 구매자가 입력한 이메일로 실제 Supabase 로그인 링크를 발송합니다.
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: { emailRedirectTo: redirect }
@@ -178,9 +186,26 @@ async function bindAuth() {
       return;
     }
 
-    // 모달 안 성공 메시지와 기존 공통 성공 알림을 모두 유지합니다.
     setLoginNote(loginText('loginSuccess', 'magicSent'), 'success');
     toast(t('magicSent'), 'success');
+
+    // 판매자용 로그인 요청 알림은 별도로 전송합니다.
+    // 이 알림 실패가 구매자 로그인 링크 발송 성공을 취소하지는 않습니다.
+    try {
+      const { error: notifyError } = await supabase.functions.invoke('contact-request', {
+        body: {
+          requestType: 'login_request',
+          email,
+          locale,
+          pageUrl: location.href,
+          requestedAt: new Date().toISOString(),
+          website: ''
+        }
+      });
+      if (notifyError) throw notifyError;
+    } catch (notifyError) {
+      console.warn('[M.O.T. Academy] Seller login-request notification failed:', notifyError);
+    }
   });
 }
 
@@ -271,12 +296,91 @@ async function invokeFunction(name, body) {
   if (error) throw error;
   return data;
 }
+
+async function notifyPurchaseRequest(requestId) {
+  if (!supabase || !requestId) return { ok: false, skipped: true };
+  try {
+    const { data, error } = await supabase.functions.invoke('notify-purchase-request', { body: { requestId } });
+    if (error) {
+      console.warn('[M.O.T. Academy] purchase notification failed:', error);
+      return { ok: false, error };
+    }
+    if (data && data.ok === false) console.warn('[M.O.T. Academy] purchase notification not sent:', data);
+    return data || { ok: true };
+  } catch (error) {
+    console.warn('[M.O.T. Academy] purchase notification exception:', error);
+    return { ok: false, error };
+  }
+}
+
+async function requestManualPurchase(product, user) {
+  if (!supabase) throw new Error('Supabase is not configured');
+  if (!product?.id) throw new Error('Product id is missing');
+
+  const openStatuses = ['requested', 'payment_pending', 'paid_confirmed'];
+  const { data: existing, error: lookupError } = await supabase
+    .from('purchase_requests')
+    .select('id,status,created_at,admin_notified_at,admin_notify_error')
+    .eq('user_id', user.id)
+    .eq('product_id', product.id)
+    .in('status', openStatuses)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (lookupError) throw lookupError;
+  if (existing) {
+    // Earlier versions returned immediately for duplicate/open requests, so administrator email was not retried.
+    // Retry notification when the request exists but has not been notified yet.
+    const notification = existing.admin_notified_at ? { ok: true, skipped: true, reason: 'already_notified' } : await notifyPurchaseRequest(existing.id);
+    return { duplicate: true, request: existing, notification };
+  }
+
+  const row = {
+    user_id: user.id,
+    product_id: product.id,
+    product_slug: product.slug,
+    customer_email: user.email,
+    price_krw: product.price_krw || 0,
+    status: 'requested',
+    request_note: `${valueLocalized(product, 'title', product.slug)} / ${formatMoney(product.price_krw)}`
+  };
+  const { data, error } = await supabase.from('purchase_requests').insert(row).select('id,status,created_at,admin_notified_at,admin_notify_error').single();
+  if (error) throw error;
+
+  // Send an administrator email notification through a Supabase Edge Function.
+  // The purchase request itself is already saved, so email failure must not block the customer flow.
+  const notification = await notifyPurchaseRequest(data?.id);
+  return { duplicate: false, request: data, notification };
+}
+
 async function startPurchase(slug, button) {
-  if (!configuredPayment()) { toast(t('setupLead'), 'error'); return; }
   const user = await requireLogin();
   if (!user) return;
+  const product = catalogProducts.find((item) => item.slug === slug);
+  if (!product) { toast(t('noProducts'), 'error'); return; }
+
   const original = button.innerHTML;
-  button.disabled = true; button.textContent = t('paymentPreparing');
+  button.disabled = true;
+
+  // Safe manual purchase request mode. This is the default until PortOne and all Edge Functions are verified.
+  if (manualPurchaseEnabled()) {
+    button.textContent = t('manualPurchasePreparing');
+    try {
+      const result = await requestManualPurchase(product, user);
+      const message = result.duplicate ? t('manualPurchaseDuplicate') : t('manualPurchaseRequested');
+      toast(`${message} ${t('manualPurchaseInstructions')}`, 'success');
+      button.textContent = result.duplicate ? t('manualPurchaseDuplicateShort') : t('manualPurchaseRequestedShort');
+      window.setTimeout(() => { button.disabled = false; button.innerHTML = original; }, 3500);
+    } catch (error) {
+      console.error(error);
+      toast(t('manualPurchaseError'), 'error');
+      button.disabled = false; button.innerHTML = original;
+    }
+    return;
+  }
+
+  if (!configuredPayment()) { toast(t('setupLead'), 'error'); button.disabled = false; button.innerHTML = original; return; }
+  button.textContent = t('paymentPreparing');
   try {
     const order = await invokeFunction('create-order', { productSlug: slug });
     if (!window.PortOne?.requestPayment) throw new Error('PortOne Browser SDK did not load');
@@ -416,4 +520,4 @@ document.addEventListener('mot:academy-languagechange', async (event) => {
 });
 document.addEventListener('DOMContentLoaded', bootstrap);
 
-export { supabase, academyReady, CONFIG, I18N, t, getUser, getSession, configured, configuredPayment, escapeHtml, valueLocalized, withLocale, locale };
+export { supabase, academyReady, CONFIG, I18N, t, getUser, getSession, configured, configuredPayment, manualPurchaseEnabled, escapeHtml, valueLocalized, withLocale, locale };

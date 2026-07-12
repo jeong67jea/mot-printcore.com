@@ -9,9 +9,11 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
 <meta name="apple-mobile-web-app-title" content="MOT 결제안내"/>
 <meta name="format-detection" content="telephone=no"/>
+<link rel="manifest" href="manifest.webmanifest"/>
+<link rel="apple-touch-icon" href="icons/icon-180.png"/>
 
 <meta content="MOT PrintCore e-book 결제 안내 / 电子书购买付款说明" name="description"/>
-<title>MOT PrintCore e-book 결제 안내 - Gmail Outlook 이미지 복사 지원</title>
+<title>MOT PrintCore e-book 결제 안내 - Gmail Outlook 이미지 전송 지원</title>
 <style>
     :root {
       --green: #07c160;
@@ -375,6 +377,20 @@
     }
     @media print { .iphone-help { display: none !important; } }
 
+
+    .image-modal {
+      position: fixed; inset: 0; z-index: 9999; display: none;
+      background: rgba(0,0,0,.72); padding: 18px; overflow: auto;
+    }
+    .image-modal.open { display: block; }
+    .image-modal-card { max-width: 760px; margin: 0 auto; background: #fff; border-radius: 12px; padding: 14px; }
+    .image-modal-card p { margin: 0 0 10px; font-size: 14px; line-height: 1.6; color: #333; }
+    .image-modal-card img { display: block; width: 100%; height: auto; border: 1px solid #ddd; background: #fff; }
+    .image-modal-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .image-modal-actions button { flex: 1 1 150px; min-height: 42px; border: 1px solid var(--green-dark); border-radius: 7px; background: var(--green); color: #fff; font-weight: 800; }
+    .image-modal-actions button.secondary { background: #fff; color: var(--green-dark); }
+    @media print { .image-modal { display: none !important; } }
+
 </style>
 </head>
 <body>
@@ -384,7 +400,7 @@
 <p class="editor-help">
     아래 4개 항목을 입력하면 결제 안내 미리보기에 즉시 반영됩니다.<br/>
     네이버메일은 <strong>“네이버메일 본문 복사”</strong> 후 붙여넣으십시오.<br/>
-    Gmail·Outlook은 HTML 이미지를 제거하므로 <strong>“Gmail·Outlook 이미지 복사”</strong>를 사용하십시오. 결제 안내 전체가 한 장의 PNG 이미지로 복사됩니다.
+    Gmail·Outlook은 붙여넣기로 이미지를 유지할 수 없으므로 <strong>“Gmail·Outlook로 이미지 보내기”</strong>를 누른 뒤 공유 화면에서 Gmail 또는 Outlook을 선택하십시오. 결제 안내 전체가 JPG 파일로 첨부됩니다.
   </p>
 <div class="editor-grid">
 <div class="editor-field">
@@ -413,8 +429,8 @@
 <div class="editor-actions">
 <button id="applyBtn" type="button">내용 적용</button>
 <button id="copyEmailBtn" type="button">네이버메일 본문 복사</button>
-<button id="copyImageBtn" type="button">Gmail·Outlook 이미지 복사</button>
-<button class="secondary" id="shareImageBtn" type="button">Gmail·Outlook 이미지 공유</button>
+<button id="sendMailImageBtn" type="button">Gmail·Outlook로 이미지 보내기</button>
+<button class="secondary" id="previewImageBtn" type="button">JPG 이미지 보기·저장</button>
 <button class="secondary" id="saveHtmlBtn" type="button">입력 완료 HTML 저장</button>
 <button class="secondary" id="printBtn" type="button">인쇄 / PDF 저장</button>
 <button class="secondary" id="resetBtn" type="button">입력 초기화</button>
@@ -493,6 +509,18 @@
 </section>
 <footer>MOT PrintCore  |  Technical Knowledge &amp; Design Standard</footer>
 </main>
+
+<div class="image-modal" id="imagePreviewModal" aria-hidden="true">
+  <div class="image-modal-card">
+    <p><strong>Gmail·Outlook용 결제안내 이미지</strong><br>아래 이미지를 길게 눌러 “사진에 저장”을 선택하거나, “공유하기”에서 Gmail·Outlook을 선택하십시오.</p>
+    <img id="generatedGuideImage" alt="Gmail Outlook용 결제안내 이미지"/>
+    <div class="image-modal-actions">
+      <button id="previewShareBtn" type="button">공유하기</button>
+      <button class="secondary" id="previewDownloadBtn" type="button">JPG 파일 저장</button>
+      <button class="secondary" id="previewCloseBtn" type="button">닫기</button>
+    </div>
+  </div>
+</div>
 <div class="email-copy-buffer" id="emailCopyBuffer"></div>
 <script>
 (function () {
@@ -551,6 +579,7 @@
       fields[key].value.classList.toggle('is-placeholder', !text);
     });
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(values)); } catch (e) {}
+    scheduleMailImagePreparation();
     if (showMessage) setStatus('입력 내용이 미리보기에 반영되었습니다.');
     return values;
   }
@@ -896,81 +925,122 @@
     return canvas;
   }
 
-  function canvasToPngBlob(canvas) {
+  function canvasToJpegBlob(canvas) {
     return new Promise(function (resolve, reject) {
       canvas.toBlob(function (blob) {
         if (blob) resolve(blob);
-        else reject(new Error('PNG 생성 실패'));
-      }, 'image/png', 1);
+        else reject(new Error('JPG 생성 실패'));
+      }, 'image/jpeg', 0.94);
     });
   }
 
-  async function createGuidePng(values) {
+  async function createGuideJpeg(values) {
     const canvas = await renderGuideCanvas(values);
-    return canvasToPngBlob(canvas);
+    return canvasToJpegBlob(canvas);
   }
 
-  async function copyGuideAsImage() {
-    const values = applyValues(false);
-    setStatus('Gmail·Outlook용 이미지를 만드는 중입니다…');
-    const blobPromise = createGuidePng(values);
+  let preparedShareFile = null;
+  let preparedShareKey = '';
+  let prepareTimer = null;
+  let previewObjectUrl = '';
 
-    if (navigator.clipboard && window.ClipboardItem) {
-      try {
-        await navigator.clipboard.write([
-          new ClipboardItem({ 'image/png': blobPromise })
-        ]);
-        setStatus('결제 안내 전체를 PNG 이미지로 복사했습니다. Gmail 또는 Outlook 본문을 길게 누르고 “붙여넣기”를 선택하십시오.');
-        return;
-      } catch (clipboardError) {
-        /* iOS 또는 메일 앱에서 이미지 클립보드를 막으면 아래 공유 방식으로 전환 */
-      }
-    }
-
-    try {
-      const blob = await blobPromise;
-      await shareGuideImageBlob(blob, values);
-    } catch (shareError) {
-      setStatus('이미지 복사·공유가 차단되었습니다. “Gmail·Outlook 이미지 공유” 버튼을 다시 누르십시오.', true);
-    }
+  function shareKey(values) {
+    return JSON.stringify(values);
   }
 
-  async function shareGuideImageBlob(blob, values) {
+  function makeShareFile(blob, values) {
     const safeOrder = (values.order || '주문정보').replace(/[\\/:*?"<>|]+/g, '_');
-    const file = new File([blob], 'MOT_PrintCore_결제안내_' + safeOrder + '.png', { type: 'image/png' });
+    return new File([blob], 'MOT_PrintCore_결제안내_' + safeOrder + '.jpg', { type: 'image/jpeg' });
+  }
+
+  async function prepareMailImage(values, quiet) {
+    const key = shareKey(values);
+    try {
+      const blob = await createGuideJpeg(values);
+      if (key !== shareKey(currentValues())) return;
+      preparedShareFile = makeShareFile(blob, values);
+      preparedShareKey = key;
+      if (!quiet) setStatus('Gmail·Outlook용 JPG 이미지 준비가 완료되었습니다. “이미지 보내기”를 누르십시오.');
+    } catch (error) {
+      preparedShareFile = null;
+      preparedShareKey = '';
+      if (!quiet) setStatus('결제안내 이미지 준비에 실패했습니다. Safari에서 새로고침하십시오.', true);
+    }
+  }
+
+  function scheduleMailImagePreparation() {
+    clearTimeout(prepareTimer);
+    prepareTimer = setTimeout(function () {
+      prepareMailImage(currentValues(), true);
+    }, 220);
+  }
+
+  function ensurePreparedFile(values) {
+    if (preparedShareFile && preparedShareKey === shareKey(values)) return true;
+    setStatus('최신 입력 내용으로 JPG 이미지를 준비하고 있습니다. 잠시 후 “이미지 보내기”를 한 번 더 누르십시오.');
+    prepareMailImage(values, false);
+    return false;
+  }
+
+  function sharePreparedFile() {
+    const values = applyValues(false);
+    if (!ensurePreparedFile(values)) return;
+    const file = preparedShareFile;
+
     if (navigator.share && (!navigator.canShare || navigator.canShare({ files: [file] }))) {
-      await navigator.share({
+      /* 파일 생성 후 기다렸다가 share를 부르면 iOS의 사용자 동작 권한이 사라질 수 있다.
+         따라서 미리 생성된 파일을 버튼 클릭 순간 즉시 공유한다. */
+      navigator.share({
         files: [file],
         title: 'MOT PrintCore e-book 결제 안내',
-        text: '결제 안내 이미지입니다. Gmail 또는 Outlook을 선택하십시오.'
+        text: 'MOT PrintCore e-book 결제 안내 이미지입니다.'
+      }).then(function () {
+        setStatus('공유가 완료되었습니다. Gmail·Outlook에서 JPG 첨부 상태를 확인하십시오.');
+      }).catch(function (error) {
+        if (error && error.name === 'AbortError') {
+          setStatus('공유를 취소했습니다.');
+        } else {
+          showPreparedImage();
+          setStatus('직접 공유가 차단되어 JPG 이미지를 열었습니다. 이미지를 길게 눌러 저장한 뒤 Gmail·Outlook에서 첨부하십시오.', true);
+        }
       });
-      setStatus('결제 안내 이미지를 공유했습니다. Gmail·Outlook에서는 이미지 첨부 상태를 확인한 뒤 보내십시오.');
       return;
     }
-    const url = URL.createObjectURL(blob);
+
+    showPreparedImage();
+    setStatus('공유 기능을 사용할 수 없어 JPG 이미지를 열었습니다. 이미지를 길게 눌러 저장하십시오.');
+  }
+
+  function showPreparedImage() {
+    const values = applyValues(false);
+    if (!ensurePreparedFile(values)) return;
+    const modal = document.getElementById('imagePreviewModal');
+    const img = document.getElementById('generatedGuideImage');
+    if (previewObjectUrl) URL.revokeObjectURL(previewObjectUrl);
+    previewObjectUrl = URL.createObjectURL(preparedShareFile);
+    img.src = previewObjectUrl;
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+  }
+
+  function closePreparedImage() {
+    const modal = document.getElementById('imagePreviewModal');
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
+  }
+
+  function downloadPreparedImage() {
+    const values = applyValues(false);
+    if (!ensurePreparedFile(values)) return;
+    const url = URL.createObjectURL(preparedShareFile);
     const a = document.createElement('a');
     a.href = url;
-    a.download = file.name;
+    a.download = preparedShareFile.name;
     document.body.appendChild(a);
     a.click();
     a.remove();
     setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
-    setStatus('결제 안내 PNG를 저장했습니다. Gmail·Outlook에서 사진/파일 첨부로 넣으십시오.');
-  }
-
-  async function shareGuideImage() {
-    const values = applyValues(false);
-    setStatus('Gmail·Outlook용 이미지를 만드는 중입니다…');
-    try {
-      const blob = await createGuidePng(values);
-      await shareGuideImageBlob(blob, values);
-    } catch (error) {
-      if (error && error.name === 'AbortError') {
-        setStatus('이미지 공유를 취소했습니다.');
-      } else {
-        setStatus('이미지 생성 또는 공유에 실패했습니다. Safari에서 다시 실행하십시오.', true);
-      }
-    }
+    setStatus('JPG 저장을 요청했습니다. Safari 다운로드 또는 파일 앱을 확인하십시오.');
   }
 
   function completedHtml(values) {
@@ -1045,8 +1115,11 @@
   });
   document.getElementById('applyBtn').addEventListener('click', function () { applyValues(true); });
   document.getElementById('copyEmailBtn').addEventListener('click', copyEmailBody);
-  document.getElementById('copyImageBtn').addEventListener('click', copyGuideAsImage);
-  document.getElementById('shareImageBtn').addEventListener('click', shareGuideImage);
+  document.getElementById('sendMailImageBtn').addEventListener('click', sharePreparedFile);
+  document.getElementById('previewImageBtn').addEventListener('click', showPreparedImage);
+  document.getElementById('previewShareBtn').addEventListener('click', sharePreparedFile);
+  document.getElementById('previewDownloadBtn').addEventListener('click', downloadPreparedImage);
+  document.getElementById('previewCloseBtn').addEventListener('click', closePreparedImage);
   document.getElementById('saveHtmlBtn').addEventListener('click', saveCompletedHtml);
   document.getElementById('printBtn').addEventListener('click', function () {
     applyValues(false);
@@ -1057,6 +1130,13 @@
 
   loadInitialValues();
 
+  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('./service-worker.js', { updateViaCache: 'none' }).then(function (registration) {
+        registration.update().catch(function () {});
+      }).catch(function () {});
+    });
+  }
 
 })();
 </script>

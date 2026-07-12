@@ -11,7 +11,7 @@
 <meta name="format-detection" content="telephone=no"/>
 
 <meta content="MOT PrintCore e-book 결제 안내 / 电子书购买付款说明" name="description"/>
-<title>MOT PrintCore e-book 결제 안내 - 입력형 (위챗 이미지 변경)</title>
+<title>MOT PrintCore e-book 결제 안내 - Gmail Outlook 이미지 복사 지원</title>
 <style>
     :root {
       --green: #07c160;
@@ -383,7 +383,8 @@
 <h2 class="editor-title">주문정보 입력 / 订单信息填写</h2>
 <p class="editor-help">
     아래 4개 항목을 입력하면 결제 안내 미리보기에 즉시 반영됩니다.<br/>
-    이메일 본문에 안내서를 그대로 보이게 하려면 <strong>“이메일 본문 복사”</strong> 버튼을 누른 뒤 메일 작성창에 붙여넣으십시오.<br/><strong>중요:</strong> 이 HTML 파일과 <code>wechat_payment_qr.jpg</code>를 GitHub의 같은 폴더에 업로드해야 QR 이미지도 복사됩니다.
+    네이버메일은 <strong>“네이버메일 본문 복사”</strong> 후 붙여넣으십시오.<br/>
+    Gmail·Outlook은 HTML 이미지를 제거하므로 <strong>“Gmail·Outlook 이미지 복사”</strong>를 사용하십시오. 결제 안내 전체가 한 장의 PNG 이미지로 복사됩니다.
   </p>
 <div class="editor-grid">
 <div class="editor-field">
@@ -411,7 +412,9 @@
 </div>
 <div class="editor-actions">
 <button id="applyBtn" type="button">내용 적용</button>
-<button id="copyEmailBtn" type="button">이메일 본문 복사</button>
+<button id="copyEmailBtn" type="button">네이버메일 본문 복사</button>
+<button id="copyImageBtn" type="button">Gmail·Outlook 이미지 복사</button>
+<button class="secondary" id="shareImageBtn" type="button">Gmail·Outlook 이미지 공유</button>
 <button class="secondary" id="saveHtmlBtn" type="button">입력 완료 HTML 저장</button>
 <button class="secondary" id="printBtn" type="button">인쇄 / PDF 저장</button>
 <button class="secondary" id="resetBtn" type="button">입력 초기화</button>
@@ -680,14 +683,14 @@
           'text/plain': new Blob([plain], { type: 'text/plain' })
         });
         await navigator.clipboard.write([item]);
-        setStatus('이메일용 안내서를 복사했습니다. 위챗 QR도 HTTPS 이미지로 포함됩니다. 메일 본문을 길게 누르고 “붙여넣기”를 선택하십시오.');
+        setStatus('네이버메일용 HTML 본문을 복사했습니다. 네이버메일 작성창을 길게 누르고 “붙여넣기”를 선택하십시오.');
         return;
       }
     } catch (ignored) {}
 
     try {
       if (fallbackCopy(html)) {
-        setStatus('이메일용 안내서를 복사했습니다. 위챗 QR도 HTTPS 이미지로 포함됩니다. 메일 본문을 길게 누르고 “붙여넣기”를 선택하십시오.');
+        setStatus('네이버메일용 HTML 본문을 복사했습니다. 네이버메일 작성창을 길게 누르고 “붙여넣기”를 선택하십시오.');
         return;
       }
     } catch (ignored) {}
@@ -701,6 +704,273 @@
     } catch (ignored) {}
 
     setStatus('자동 복사가 차단되었습니다. 아래 결제 안내를 길게 눌러 복사하십시오.', true);
+  }
+
+  function canvasWrapLines(ctx, text, maxWidth) {
+    const result = [];
+    String(text || '').split('\n').forEach(function (paragraph) {
+      if (!paragraph) {
+        result.push('');
+        return;
+      }
+      let line = '';
+      Array.from(paragraph).forEach(function (ch) {
+        const test = line + ch;
+        if (line && ctx.measureText(test).width > maxWidth) {
+          result.push(line);
+          line = ch;
+        } else {
+          line = test;
+        }
+      });
+      if (line) result.push(line);
+    });
+    return result;
+  }
+
+  function canvasText(ctx, text, x, y, maxWidth, lineHeight, options) {
+    const opts = options || {};
+    const lines = canvasWrapLines(ctx, text, maxWidth);
+    ctx.textAlign = opts.align || 'left';
+    ctx.textBaseline = 'top';
+    const drawX = opts.align === 'center' ? x + maxWidth / 2 : (opts.align === 'right' ? x + maxWidth : x);
+    lines.forEach(function (line, index) {
+      ctx.fillText(line, drawX, y + index * lineHeight);
+    });
+    return lines.length * lineHeight;
+  }
+
+  function canvasRect(ctx, x, y, w, h, fill, stroke) {
+    if (fill) {
+      ctx.fillStyle = fill;
+      ctx.fillRect(x, y, w, h);
+    }
+    if (stroke) {
+      ctx.strokeStyle = stroke;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x, y, w, h);
+    }
+  }
+
+  function waitForImage(img) {
+    if (img && img.complete && img.naturalWidth) return Promise.resolve(img);
+    return new Promise(function (resolve, reject) {
+      if (!img) return reject(new Error('QR image not found'));
+      img.addEventListener('load', function () { resolve(img); }, { once: true });
+      img.addEventListener('error', function () { reject(new Error('QR image load failed')); }, { once: true });
+    });
+  }
+
+  async function renderGuideCanvas(values) {
+    const canvas = document.createElement('canvas');
+    const W = 1200;
+    const H = 1697;
+    const M = 76;
+    const green = '#07c160';
+    const line = '#cfd8d3';
+    const label = '#f2f6f4';
+    const soft = '#f5faf7';
+    const noticeBg = '#fffdf5';
+    const noticeLine = '#dfd39a';
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, W, H);
+
+    let y = 42;
+    canvasRect(ctx, M, y, W - M * 2, 62, green, null);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '700 25px -apple-system,BlinkMacSystemFont,"Malgun Gothic","Microsoft YaHei",Arial,sans-serif';
+    canvasText(ctx, 'MOT PrintCore', M, y + 16, W - M * 2, 32, { align: 'center' });
+    y += 92;
+
+    ctx.fillStyle = '#222222';
+    ctx.font = '800 43px -apple-system,BlinkMacSystemFont,"Malgun Gothic","Microsoft YaHei",Arial,sans-serif';
+    canvasText(ctx, 'e-book 결제 안내 / 电子书购买付款说明', M, y, W - M * 2, 54, { align: 'center' });
+    y += 70;
+    ctx.fillStyle = '#666666';
+    ctx.font = '400 21px -apple-system,BlinkMacSystemFont,"Malgun Gothic","Microsoft YaHei",Arial,sans-serif';
+    canvasText(ctx, '구매해 주셔서 감사합니다. 아래 주문정보와 결제수단을 확인해 주십시오.\n感谢您的购买。请确认以下订单信息及付款方式。', M, y, W - M * 2, 32, { align: 'center' });
+    y += 83;
+
+    ctx.fillStyle = green;
+    ctx.font = '800 27px -apple-system,BlinkMacSystemFont,"Malgun Gothic","Microsoft YaHei",Arial,sans-serif';
+    canvasText(ctx, '1. 주문 정보 / 订单信息', M, y, W - M * 2, 36);
+    y += 44;
+
+    const tableW = W - M * 2;
+    const labelW = 315;
+    const rowH = 74;
+    const shown = {
+      book: values.book || fields.book.placeholder,
+      lang: values.lang || fields.lang.placeholder,
+      order: values.order || fields.order.placeholder,
+      amount: values.amount || fields.amount.placeholder
+    };
+    const rows = [
+      ['도서명 / 电子书名称', shown.book],
+      ['언어 버전 / 语言版本', shown.lang],
+      ['주문번호 / 订单编号', shown.order],
+      ['결제금액 / 付款金额', shown.amount]
+    ];
+    rows.forEach(function (row) {
+      canvasRect(ctx, M, y, labelW, rowH, label, line);
+      canvasRect(ctx, M + labelW, y, tableW - labelW, rowH, '#ffffff', line);
+      ctx.fillStyle = '#222222';
+      ctx.font = '700 20px -apple-system,BlinkMacSystemFont,"Malgun Gothic","Microsoft YaHei",Arial,sans-serif';
+      canvasText(ctx, row[0], M + 16, y + 21, labelW - 32, 26);
+      ctx.font = '700 21px -apple-system,BlinkMacSystemFont,"Malgun Gothic","Microsoft YaHei",Arial,sans-serif';
+      canvasText(ctx, row[1], M + labelW + 18, y + 20, tableW - labelW - 36, 27);
+      y += rowH;
+    });
+    y += 37;
+
+    ctx.fillStyle = green;
+    ctx.font = '800 27px -apple-system,BlinkMacSystemFont,"Malgun Gothic","Microsoft YaHei",Arial,sans-serif';
+    canvasText(ctx, '2. 결제 방법 / 付款方式', M, y, tableW, 36);
+    y += 44;
+
+    const panelH = 410;
+    const halfW = tableW / 2;
+    canvasRect(ctx, M, y, halfW, panelH, '#ffffff', line);
+    canvasRect(ctx, M + halfW, y, halfW, panelH, '#ffffff', line);
+
+    ctx.fillStyle = green;
+    ctx.font = '800 25px -apple-system,BlinkMacSystemFont,"Malgun Gothic","Microsoft YaHei",Arial,sans-serif';
+    canvasText(ctx, '한국 계좌이체 / 韩国银行转账', M + 24, y + 25, halfW - 48, 32);
+    ctx.fillStyle = '#222222';
+    ctx.font = '600 21px -apple-system,BlinkMacSystemFont,"Malgun Gothic","Microsoft YaHei",Arial,sans-serif';
+    canvasText(ctx, '은행명 / 银行名称: 하나은행 / 韩亚银行 (Hana Bank)', M + 24, y + 91, halfW - 48, 30);
+    canvasText(ctx, '계좌번호 / 银行账号: 385-890011-72108', M + 24, y + 158, halfW - 48, 30);
+    canvasText(ctx, '예금주 / 收款人: 최** / 崔**', M + 24, y + 225, halfW - 48, 30);
+    ctx.fillStyle = '#666666';
+    ctx.font = '400 19px -apple-system,BlinkMacSystemFont,"Malgun Gothic","Microsoft YaHei",Arial,sans-serif';
+    canvasText(ctx, '입금자명은 구매자 성명 또는 회사명으로 입력해 주십시오.\n请使用购买者姓名或公司名称付款。', M + 24, y + 302, halfW - 48, 28);
+
+    ctx.fillStyle = green;
+    ctx.font = '800 25px -apple-system,BlinkMacSystemFont,"Malgun Gothic","Microsoft YaHei",Arial,sans-serif';
+    canvasText(ctx, '중국 위챗 결제 / 微信支付', M + halfW + 24, y + 25, halfW - 48, 32, { align: 'center' });
+    const qr = await waitForImage(document.querySelector('#paymentGuide .qr'));
+    const qrBox = 245;
+    const scale = Math.min(qrBox / qr.naturalWidth, qrBox / qr.naturalHeight);
+    const qw = qr.naturalWidth * scale;
+    const qh = qr.naturalHeight * scale;
+    const qx = M + halfW + (halfW - qw) / 2;
+    const qy = y + 88 + (245 - qh) / 2;
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(qr, qx, qy, qw, qh);
+    ctx.fillStyle = '#666666';
+    ctx.font = '400 18px -apple-system,BlinkMacSystemFont,"Malgun Gothic","Microsoft YaHei",Arial,sans-serif';
+    canvasText(ctx, '付款备注：订单编号 + 购买者姓名', M + halfW + 24, y + 355, halfW - 48, 28, { align: 'center' });
+    y += panelH + 38;
+
+    ctx.fillStyle = green;
+    ctx.font = '800 27px -apple-system,BlinkMacSystemFont,"Malgun Gothic","Microsoft YaHei",Arial,sans-serif';
+    canvasText(ctx, '3. 결제 후 회신 / 付款后回复', M, y, tableW, 36);
+    y += 45;
+
+    canvasRect(ctx, M, y, tableW, 105, soft, '#cfe1d7');
+    ctx.fillStyle = '#222222';
+    ctx.font = '700 21px -apple-system,BlinkMacSystemFont,"Malgun Gothic","Microsoft YaHei",Arial,sans-serif';
+    canvasText(ctx, '주문번호 · 입금자명 · 결제금액 · 결제일시 · e-book 수령 이메일 주소\n订单编号 · 付款人姓名 · 付款金额 · 付款时间 · 接收电子书的邮箱地址', M + 22, y + 20, tableW - 44, 31, { align: 'center' });
+    y += 126;
+
+    ctx.fillStyle = '#222222';
+    ctx.font = '400 19px -apple-system,BlinkMacSystemFont,"Malgun Gothic","Microsoft YaHei",Arial,sans-serif';
+    const noteH = canvasText(ctx, '입금 확인 후 구매하신 PDF e-book을 이메일로 발송합니다. 결제 화면 캡처가 아닌 실제 입금내역을 기준으로 확인합니다.\n确认实际到账后，将通过电子邮件发送 PDF 电子书。付款确认以实际到账记录为准。', M, y, tableW, 29);
+    y += noteH + 22;
+
+    const noticeText = '안내 / 注意  본 e-book은 구매자 또는 구매회사 내부에서만 사용할 수 있으며, 무단 복사·공유·재판매·온라인 게시를 금지합니다. 환불은 원 결제자와 원 결제수단으로만 처리합니다.\n本电子书仅限购买者本人或购买公司内部使用，禁止未经许可复制、共享、转售或上传网络。退款仅退回原付款人及原付款方式。';
+    ctx.font = '600 18px -apple-system,BlinkMacSystemFont,"Malgun Gothic","Microsoft YaHei",Arial,sans-serif';
+    const noticeLines = canvasWrapLines(ctx, noticeText, tableW - 44);
+    const noticeH = Math.max(120, noticeLines.length * 27 + 35);
+    canvasRect(ctx, M, y, tableW, noticeH, noticeBg, noticeLine);
+    ctx.fillStyle = '#4a4515';
+    canvasText(ctx, noticeText, M + 22, y + 17, tableW - 44, 27);
+    y += noticeH + 28;
+
+    ctx.fillStyle = green;
+    ctx.font = '800 19px -apple-system,BlinkMacSystemFont,"Malgun Gothic","Microsoft YaHei",Arial,sans-serif';
+    canvasText(ctx, 'MOT PrintCore  |  Technical Knowledge & Design Standard', M, Math.min(y, H - 58), tableW, 28, { align: 'center' });
+    return canvas;
+  }
+
+  function canvasToPngBlob(canvas) {
+    return new Promise(function (resolve, reject) {
+      canvas.toBlob(function (blob) {
+        if (blob) resolve(blob);
+        else reject(new Error('PNG 생성 실패'));
+      }, 'image/png', 1);
+    });
+  }
+
+  async function createGuidePng(values) {
+    const canvas = await renderGuideCanvas(values);
+    return canvasToPngBlob(canvas);
+  }
+
+  async function copyGuideAsImage() {
+    const values = applyValues(false);
+    setStatus('Gmail·Outlook용 이미지를 만드는 중입니다…');
+    const blobPromise = createGuidePng(values);
+
+    if (navigator.clipboard && window.ClipboardItem) {
+      try {
+        await navigator.clipboard.write([
+          new ClipboardItem({ 'image/png': blobPromise })
+        ]);
+        setStatus('결제 안내 전체를 PNG 이미지로 복사했습니다. Gmail 또는 Outlook 본문을 길게 누르고 “붙여넣기”를 선택하십시오.');
+        return;
+      } catch (clipboardError) {
+        /* iOS 또는 메일 앱에서 이미지 클립보드를 막으면 아래 공유 방식으로 전환 */
+      }
+    }
+
+    try {
+      const blob = await blobPromise;
+      await shareGuideImageBlob(blob, values);
+    } catch (shareError) {
+      setStatus('이미지 복사·공유가 차단되었습니다. “Gmail·Outlook 이미지 공유” 버튼을 다시 누르십시오.', true);
+    }
+  }
+
+  async function shareGuideImageBlob(blob, values) {
+    const safeOrder = (values.order || '주문정보').replace(/[\\/:*?"<>|]+/g, '_');
+    const file = new File([blob], 'MOT_PrintCore_결제안내_' + safeOrder + '.png', { type: 'image/png' });
+    if (navigator.share && (!navigator.canShare || navigator.canShare({ files: [file] }))) {
+      await navigator.share({
+        files: [file],
+        title: 'MOT PrintCore e-book 결제 안내',
+        text: '결제 안내 이미지입니다. Gmail 또는 Outlook을 선택하십시오.'
+      });
+      setStatus('결제 안내 이미지를 공유했습니다. Gmail·Outlook에서는 이미지 첨부 상태를 확인한 뒤 보내십시오.');
+      return;
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = file.name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
+    setStatus('결제 안내 PNG를 저장했습니다. Gmail·Outlook에서 사진/파일 첨부로 넣으십시오.');
+  }
+
+  async function shareGuideImage() {
+    const values = applyValues(false);
+    setStatus('Gmail·Outlook용 이미지를 만드는 중입니다…');
+    try {
+      const blob = await createGuidePng(values);
+      await shareGuideImageBlob(blob, values);
+    } catch (error) {
+      if (error && error.name === 'AbortError') {
+        setStatus('이미지 공유를 취소했습니다.');
+      } else {
+        setStatus('이미지 생성 또는 공유에 실패했습니다. Safari에서 다시 실행하십시오.', true);
+      }
+    }
   }
 
   function completedHtml(values) {
@@ -775,6 +1045,8 @@
   });
   document.getElementById('applyBtn').addEventListener('click', function () { applyValues(true); });
   document.getElementById('copyEmailBtn').addEventListener('click', copyEmailBody);
+  document.getElementById('copyImageBtn').addEventListener('click', copyGuideAsImage);
+  document.getElementById('shareImageBtn').addEventListener('click', shareGuideImage);
   document.getElementById('saveHtmlBtn').addEventListener('click', saveCompletedHtml);
   document.getElementById('printBtn').addEventListener('click', function () {
     applyValues(false);
@@ -784,6 +1056,7 @@
   document.getElementById('resetBtn').addEventListener('click', resetValues);
 
   loadInitialValues();
+
 
 })();
 </script>

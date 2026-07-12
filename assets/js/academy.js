@@ -45,11 +45,6 @@ function configured() {
 function configuredPayment() {
   return configured() && !isPlaceholder(CONFIG?.payment?.storeId) && !isPlaceholder(CONFIG?.payment?.channelKey);
 }
-function manualPurchaseEnabled() {
-  // Safe default: when PortOne is not fully configured, use a manual purchase-request workflow.
-  // Set CONFIG.payment.manualPurchase = false only after PortOne + Edge Functions are fully verified.
-  return CONFIG?.payment?.manualPurchase !== false;
-}
 let supabase = null;
 let resolveAcademyReady;
 const academyReady = new Promise((resolve) => { resolveAcademyReady = resolve; });
@@ -121,21 +116,95 @@ async function bindAuth() {
     if (event.target.id === 'academy-login-modal') closeLogin();
   });
   const form = $('#academy-login-form');
+
+  let loginNote = $('#academy-login-note');
+  if (form && !loginNote) {
+    loginNote = document.createElement('p');
+    loginNote.id = 'academy-login-note';
+    loginNote.className = 'a-note';
+    loginNote.setAttribute('aria-live', 'polite');
+    form.appendChild(loginNote);
+  }
+
+  const loginMessages = {
+    ko: {
+      sending: '로그인 링크를 요청하고 있습니다...',
+      success: '정상적으로 요청되었습니다. 입력한 이메일의 받은편지함과 스팸함을 확인해 주세요.',
+      error: '로그인 링크 요청에 실패했습니다. 잠시 후 다시 시도해 주세요.'
+    },
+    en: {
+      sending: 'Requesting your sign-in link...',
+      success: 'Your request was completed successfully. Check the inbox and spam folder of the email you entered.',
+      error: 'The sign-in link request failed. Please try again later.'
+    },
+    zh: {
+      sending: '正在请求登录链接...',
+      success: '请求已成功完成。请检查所输入邮箱的收件箱和垃圾邮件文件夹。',
+      error: '登录链接请求失败，请稍后重试。'
+    }
+  };
+
+  const setLoginNote = (message, state = '') => {
+    if (!loginNote) return;
+    loginNote.textContent = message;
+    loginNote.className = `a-note ${state}`.trim();
+  };
+
   form?.addEventListener('submit', async (event) => {
     event.preventDefault();
-    if (!supabase) { toast(t('setupLead'), 'error'); return; }
+    const messageSet = loginMessages[locale] || loginMessages.ko;
+
+    if (!supabase) {
+      setLoginNote(t('setupLead'), 'error');
+      toast(t('setupLead'), 'error');
+      return;
+    }
+
     const email = $('#academy-login-email')?.value?.trim();
     if (!email) return;
+
     const submit = $('#academy-login-submit');
-    submit.disabled = true; submit.textContent = t('sending');
-    const callback = new URL(CONFIG.routes?.authCallback || 'auth-callback.html', location.href);
-    callback.searchParams.set('next', CONFIG.routes?.academy || 'academy.html');
-    callback.searchParams.set('lang', locale);
-    const redirect = callback.href;
-    const { error } = await supabase.auth.signInWithOtp({ email, options: { emailRedirectTo: redirect } });
-    submit.disabled = false; submit.textContent = t('sendMagicLink');
-    if (error) toast(t('loginError'), 'error');
-    else toast(t('magicSent'), 'success');
+    if (submit) {
+      submit.disabled = true;
+      submit.textContent = t('sending');
+    }
+    setLoginNote(messageSet.sending);
+
+    const redirectUrl = new URL(CONFIG.routes?.library || 'my-library.html', CONFIG.siteUrl || location.href);
+    redirectUrl.searchParams.set('lang', locale);
+
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: redirectUrl.toString() }
+    });
+
+    if (submit) {
+      submit.disabled = false;
+      submit.textContent = t('sendMagicLink');
+    }
+
+    if (error) {
+      console.error('[M.O.T. Academy] Magic-link request failed:', error);
+      setLoginNote(`${messageSet.error} (${error.message || 'Unknown error'})`, 'error');
+      toast(t('loginError'), 'error');
+      return;
+    }
+
+    setLoginNote(messageSet.success, 'success');
+    toast(messageSet.success, 'success');
+
+    try {
+      await invokeFunction('contact-request', {
+        requestType: 'login_request',
+        email,
+        locale,
+        pageUrl: location.href,
+        requestedAt: new Date().toISOString(),
+        website: ''
+      });
+    } catch (notifyError) {
+      console.warn('[M.O.T. Academy] Admin login-request notification failed:', notifyError);
+    }
   });
 }
 
@@ -226,91 +295,12 @@ async function invokeFunction(name, body) {
   if (error) throw error;
   return data;
 }
-
-async function notifyPurchaseRequest(requestId) {
-  if (!supabase || !requestId) return { ok: false, skipped: true };
-  try {
-    const { data, error } = await supabase.functions.invoke('notify-purchase-request', { body: { requestId } });
-    if (error) {
-      console.warn('[M.O.T. Academy] purchase notification failed:', error);
-      return { ok: false, error };
-    }
-    if (data && data.ok === false) console.warn('[M.O.T. Academy] purchase notification not sent:', data);
-    return data || { ok: true };
-  } catch (error) {
-    console.warn('[M.O.T. Academy] purchase notification exception:', error);
-    return { ok: false, error };
-  }
-}
-
-async function requestManualPurchase(product, user) {
-  if (!supabase) throw new Error('Supabase is not configured');
-  if (!product?.id) throw new Error('Product id is missing');
-
-  const openStatuses = ['requested', 'payment_pending', 'paid_confirmed'];
-  const { data: existing, error: lookupError } = await supabase
-    .from('purchase_requests')
-    .select('id,status,created_at,admin_notified_at,admin_notify_error')
-    .eq('user_id', user.id)
-    .eq('product_id', product.id)
-    .in('status', openStatuses)
-    .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (lookupError) throw lookupError;
-  if (existing) {
-    // Earlier versions returned immediately for duplicate/open requests, so administrator email was not retried.
-    // Retry notification when the request exists but has not been notified yet.
-    const notification = existing.admin_notified_at ? { ok: true, skipped: true, reason: 'already_notified' } : await notifyPurchaseRequest(existing.id);
-    return { duplicate: true, request: existing, notification };
-  }
-
-  const row = {
-    user_id: user.id,
-    product_id: product.id,
-    product_slug: product.slug,
-    customer_email: user.email,
-    price_krw: product.price_krw || 0,
-    status: 'requested',
-    request_note: `${valueLocalized(product, 'title', product.slug)} / ${formatMoney(product.price_krw)}`
-  };
-  const { data, error } = await supabase.from('purchase_requests').insert(row).select('id,status,created_at,admin_notified_at,admin_notify_error').single();
-  if (error) throw error;
-
-  // Send an administrator email notification through a Supabase Edge Function.
-  // The purchase request itself is already saved, so email failure must not block the customer flow.
-  const notification = await notifyPurchaseRequest(data?.id);
-  return { duplicate: false, request: data, notification };
-}
-
 async function startPurchase(slug, button) {
+  if (!configuredPayment()) { toast(t('setupLead'), 'error'); return; }
   const user = await requireLogin();
   if (!user) return;
-  const product = catalogProducts.find((item) => item.slug === slug);
-  if (!product) { toast(t('noProducts'), 'error'); return; }
-
   const original = button.innerHTML;
-  button.disabled = true;
-
-  // Safe manual purchase request mode. This is the default until PortOne and all Edge Functions are verified.
-  if (manualPurchaseEnabled()) {
-    button.textContent = t('manualPurchasePreparing');
-    try {
-      const result = await requestManualPurchase(product, user);
-      const message = result.duplicate ? t('manualPurchaseDuplicate') : t('manualPurchaseRequested');
-      toast(`${message} ${t('manualPurchaseInstructions')}`, 'success');
-      button.textContent = result.duplicate ? t('manualPurchaseDuplicateShort') : t('manualPurchaseRequestedShort');
-      window.setTimeout(() => { button.disabled = false; button.innerHTML = original; }, 3500);
-    } catch (error) {
-      console.error(error);
-      toast(t('manualPurchaseError'), 'error');
-      button.disabled = false; button.innerHTML = original;
-    }
-    return;
-  }
-
-  if (!configuredPayment()) { toast(t('setupLead'), 'error'); button.disabled = false; button.innerHTML = original; return; }
-  button.textContent = t('paymentPreparing');
+  button.disabled = true; button.textContent = t('paymentPreparing');
   try {
     const order = await invokeFunction('create-order', { productSlug: slug });
     if (!window.PortOne?.requestPayment) throw new Error('PortOne Browser SDK did not load');
@@ -450,4 +440,4 @@ document.addEventListener('mot:academy-languagechange', async (event) => {
 });
 document.addEventListener('DOMContentLoaded', bootstrap);
 
-export { supabase, academyReady, CONFIG, I18N, t, getUser, getSession, configured, configuredPayment, manualPurchaseEnabled, escapeHtml, valueLocalized, withLocale, locale };
+export { supabase, academyReady, CONFIG, I18N, t, getUser, getSession, configured, configuredPayment, escapeHtml, valueLocalized, withLocale, locale };

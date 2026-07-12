@@ -9,8 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
 <meta name="apple-mobile-web-app-title" content="MOT 결제안내"/>
 <meta name="format-detection" content="telephone=no"/>
-<link rel="manifest" href="manifest.webmanifest"/>
-<link rel="apple-touch-icon" href="icons/icon-180.png"/>
+
 <meta content="MOT PrintCore e-book 결제 안내 / 电子书购买付款说明" name="description"/>
 <title>MOT PrintCore e-book 결제 안내 - 입력형 (위챗 이미지 변경)</title>
 <style>
@@ -384,7 +383,7 @@
 <h2 class="editor-title">주문정보 입력 / 订单信息填写</h2>
 <p class="editor-help">
     아래 4개 항목을 입력하면 결제 안내 미리보기에 즉시 반영됩니다.<br/>
-    이메일 본문에 안내서를 그대로 보이게 하려면 <strong>“이메일 본문 복사”</strong> 버튼을 누른 뒤 메일 작성창에 붙여넣으십시오.
+    이메일 본문에 안내서를 그대로 보이게 하려면 <strong>“이메일 본문 복사”</strong> 버튼을 누른 뒤 메일 작성창에 붙여넣으십시오.<br/><strong>중요:</strong> 이 HTML 파일과 <code>wechat_payment_qr.jpg</code>를 GitHub의 같은 폴더에 업로드해야 QR 이미지도 복사됩니다.
   </p>
 <div class="editor-grid">
 <div class="editor-field">
@@ -577,6 +576,15 @@
     return qr ? qr.getAttribute('src') : '';
   }
 
+  // iPhone Mail은 붙여넣기할 때 data:image(Base64) 이미지를 제거합니다.
+  // 이메일 본문에는 같은 GitHub Pages 폴더의 실제 HTTPS 이미지 주소를 사용합니다.
+  function getEmailQrSource() {
+    if (window.location.protocol === 'http:' || window.location.protocol === 'https:') {
+      return new URL('wechat_payment_qr.jpg', window.location.href).href;
+    }
+    return getQrSource();
+  }
+
   function buildEmailHtml(values) {
     const green = '#07c160';
     const line = '#cfd8d3';
@@ -584,7 +592,7 @@
     const soft = '#f5faf7';
     const noticeBg = '#fffdf5';
     const noticeLine = '#dfd39a';
-    const qrSrc = getQrSource();
+    const qrSrc = getEmailQrSource();
     const shown = {
       book: values.book || fields.book.placeholder,
       lang: values.lang || fields.lang.placeholder,
@@ -672,14 +680,14 @@
           'text/plain': new Blob([plain], { type: 'text/plain' })
         });
         await navigator.clipboard.write([item]);
-        setStatus('이메일용 안내서를 복사했습니다. 메일 본문을 길게 누르고 “붙여넣기”를 선택하십시오.');
+        setStatus('이메일용 안내서를 복사했습니다. 위챗 QR도 HTTPS 이미지로 포함됩니다. 메일 본문을 길게 누르고 “붙여넣기”를 선택하십시오.');
         return;
       }
     } catch (ignored) {}
 
     try {
       if (fallbackCopy(html)) {
-        setStatus('이메일용 안내서를 복사했습니다. 메일 본문을 길게 누르고 “붙여넣기”를 선택하십시오.');
+        setStatus('이메일용 안내서를 복사했습니다. 위챗 QR도 HTTPS 이미지로 포함됩니다. 메일 본문을 길게 누르고 “붙여넣기”를 선택하십시오.');
         return;
       }
     } catch (ignored) {}
@@ -777,11 +785,6 @@
 
   loadInitialValues();
 
-  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
-    window.addEventListener('load', function () {
-      navigator.serviceWorker.register('./service-worker.js').catch(function () {});
-    });
-  }
 })();
 </script>
 </body>

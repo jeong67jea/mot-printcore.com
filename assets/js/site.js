@@ -165,12 +165,37 @@
     const form = $('#project-form');
     if (!form) return '';
     const data = new FormData(form);
-    const labels = {
-      ko: ['회사 / 담당자', '국가 / 지역', '대상 제품 또는 부품', '현재 문제 및 목표'],
-      en: ['Company / Contact', 'Country / Region', 'Target product or component', 'Current issue and target'],
-      zh: ['公司 / 联系人', '国家 / 地区', '目标产品或部件', '当前问题与目标']
-    }[locale] || [];
-    const values = [data.get('name'), data.get('region'), data.get('product'), data.get('issue')];
+   const labels = {
+  ko: [
+    '회사 / 담당자',
+    '국가 / 지역',
+    '회신 이메일',
+    '대상 제품 또는 부품',
+    '현재 문제 및 목표'
+  ],
+  en: [
+    'Company / Contact',
+    'Country / Region',
+    'Reply email',
+    'Target product or component',
+    'Current issue and target'
+  ],
+  zh: [
+    '公司 / 联系人',
+    '国家 / 地区',
+    '回复邮箱',
+    '目标产品或部件',
+    '当前问题与目标'
+  ]
+}[locale] || [];
+
+const values = [
+  data.get('name'),
+  data.get('region'),
+  data.get('email'),
+  data.get('product'),
+  data.get('issue')
+];    
     return labels.map((label, index) => `${label}: ${values[index] || '-'}`).join('\n');
   }
 
@@ -184,15 +209,99 @@
       zh: { missing: '请填写公司/联系人、目标产品或部件，以及当前问题与目标。', config: '请先在 assets/js/site-config.js 中填写公开邮箱地址。', copied: '咨询内容已复制，可粘贴到邮件或微信中。', copiedFail: '无法自动复制，请手动选择并复制内容。' }
     };
     const currentMessages = () => messages[locale] || messages.ko;
+form.addEventListener('submit', async (event) => {
+  event.preventDefault();
 
-    form.addEventListener('submit', (event) => {
-      event.preventDefault();
-      if (!form.checkValidity()) { notify(currentMessages().missing, 'is-error'); form.reportValidity(); return; }
-      if (isPlaceholder(config.contactEmail)) { notify(currentMessages().config, 'is-error'); return; }
-      const subjects = { ko: '[M.O.T.] 기술 프로젝트 상담 요청', en: '[M.O.T.] Technical Project Consultation', zh: '[M.O.T.] 技术项目咨询申请' };
-      const body = projectBrief();
-      window.location.href = `mailto:${encodeURIComponent(config.contactEmail)}?subject=${encodeURIComponent(subjects[locale] || subjects.ko)}&body=${encodeURIComponent(body)}`;
-    });
+  if (!form.checkValidity()) {
+    notify(currentMessages().missing, 'is-error');
+    form.reportValidity();
+    return;
+  }
+
+  const submitButton = form.querySelector('button[type="submit"]');
+  const originalButtonHtml = submitButton?.innerHTML || '';
+
+  const data = new FormData(form);
+
+  const payload = {
+    name: String(data.get('name') || '').trim(),
+    region: String(data.get('region') || '').trim(),
+    email: String(data.get('email') || '').trim(),
+    product: String(data.get('product') || '').trim(),
+    issue: String(data.get('issue') || '').trim(),
+    website: String(data.get('website') || '').trim()
+  };
+
+  try {
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.textContent =
+        locale === 'zh'
+          ? '正在发送...'
+          : locale === 'en'
+            ? 'Sending...'
+            : '문의 전송 중...';
+    }
+
+    notify(
+      locale === 'zh'
+        ? '正在发送咨询内容。'
+        : locale === 'en'
+          ? 'Sending your inquiry.'
+          : '문의 내용을 전송하고 있습니다.'
+    );
+
+    const response = await fetch(
+      'https://hxpjxebwpnepxcfighff.supabase.co/functions/v1/contact-request',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      }
+    );
+
+    const result = await response.json().catch(() => ({
+      ok: false,
+      error: 'Invalid server response'
+    }));
+
+    if (!response.ok || !result.ok) {
+      throw new Error(
+        result.error ||
+        `문의 전송 실패: HTTP ${response.status}`
+      );
+    }
+
+    notify(
+      locale === 'zh'
+        ? '咨询已成功发送。我们将尽快回复。'
+        : locale === 'en'
+          ? 'Your inquiry has been sent successfully. We will reply as soon as possible.'
+          : '문의가 정상적으로 전송되었습니다. 확인 후 답변드리겠습니다.',
+      'is-success'
+    );
+
+    form.reset();
+  } catch (error) {
+    console.error('Contact request failed:', error);
+
+    notify(
+      locale === 'zh'
+        ? '发送失败，请稍后重试。'
+        : locale === 'en'
+          ? 'The inquiry could not be sent. Please try again later.'
+          : '문의 전송에 실패했습니다. 잠시 후 다시 시도해 주세요.',
+      'is-error'
+    );
+  } finally {
+    if (submitButton) {
+      submitButton.disabled = false;
+      submitButton.innerHTML = originalButtonHtml;
+    }
+  }
+});
 
     copy?.addEventListener('click', async () => {
       if (!form.checkValidity()) { notify(currentMessages().missing, 'is-error'); form.reportValidity(); return; }

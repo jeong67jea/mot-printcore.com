@@ -9,21 +9,7 @@
   const PAGE = document.body.dataset.commercePage || 'commerce';
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
-  const isPlaceholder = (value) => {
-    const text = String(value ?? '').trim();
-    return !text || text === '#' || /^javascript:/i.test(text) || /\{\{|YOUR_|example\.com/i.test(text);
-  };
-
-  // 멤버십 버튼이 상품/결제 URL이 아니라 academy.html 소개 화면으로
-  // 잘못 연결된 경우 이동을 차단하고 '결제 운영' 안내로 처리합니다.
-  const isInvalidCheckout = (item, value) => {
-    if (isPlaceholder(value)) return true;
-    const text = String(value).trim();
-    if (item.checkoutKey === 'academyMembership' && /(^|\/)academy\.html(?:[?#]|$)/i.test(text)) {
-      return true;
-    }
-    return false;
-  };
+  const isPlaceholder = (value) => !value || /\{\{|YOUR_|example\.com/i.test(String(value));
   const safe = (value) => String(value ?? '').replace(/[&<>'"]/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[m]));
 
   const urlLocale = new URLSearchParams(window.location.search).get('lang');
@@ -102,7 +88,7 @@
     grid.innerHTML = C.offers.content.map((rawItem, index) => {
       const item = localOffer('content', rawItem.sku, rawItem);
       const url = C.checkouts[rawItem.checkoutKey];
-      const inactive = isInvalidCheckout(rawItem, url);
+      const inactive = isPlaceholder(url);
       return `
         <article class="content-card ${index === 3 ? 'content-card-featured' : ''}">
           <div class="content-label">${safe(item.kind)}</div>
@@ -122,36 +108,85 @@
     if (!form || form.dataset.bound === 'true') return;
     form.dataset.bound = 'true';
 
-    form.addEventListener('submit', (event) => {
+    form.addEventListener('submit', async (event) => {
       event.preventDefault();
+
       if (!form.checkValidity()) {
         note.textContent = t('formMissing');
         note.className = 'form-note form-error';
         form.reportValidity();
         return;
       }
-      const email = C.company.billingEmail || C.policy.serviceInquiryEmail;
-      if (isPlaceholder(email)) {
-        note.textContent = t('formNoEmail');
-        note.className = 'form-note form-error';
-        return;
-      }
+
+      const submitButton = form.querySelector('button[type="submit"]');
+      const originalButtonHtml = submitButton?.innerHTML || '';
       const f = new FormData(form);
-      const subject = `[M.O.T.] ${t('mailSubject')} — ${f.get('company') || f.get('name') || 'Project Inquiry'}`;
-      const body = [
-        t('mailHeader'), '',
-        `${t('mailCompany')}: ${f.get('company') || '-'}`,
-        `${t('mailName')}: ${f.get('name') || '-'}`,
-        `${t('mailEmail')}: ${f.get('email') || '-'}`,
-        `${t('mailPhone')}: ${f.get('phone') || '-'}`,
-        `${t('mailService')}: ${f.get('service') || '-'}`,
-        `${t('mailIssue')}: ${f.get('issue') || '-'}`,
-        `${t('mailDetail')}: ${f.get('detail') || '-'}`,
-        '', t('mailAttachment')
-      ].join('\n');
-      window.location.href = `mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-      note.textContent = t('formOpened');
-      note.className = 'form-note form-success';
+
+      const payload = {
+        requestType: 'quotation',
+        company: String(f.get('company') || '').trim(),
+        name: String(f.get('name') || '').trim(),
+        email: String(f.get('email') || '').trim(),
+        phone: String(f.get('phone') || '').trim(),
+        service: String(f.get('service') || '').trim(),
+        issue: String(f.get('issue') || '').trim(),
+        detail: String(f.get('detail') || '').trim(),
+        locale,
+        website: ''
+      };
+
+      try {
+        if (submitButton) {
+          submitButton.disabled = true;
+          submitButton.textContent =
+            locale === 'zh' ? '正在发送...' :
+            locale === 'en' ? 'Sending...' :
+            '견적 요청 전송 중...';
+        }
+
+        note.textContent =
+          locale === 'zh' ? '正在发送报价请求。' :
+          locale === 'en' ? 'Sending your quotation request.' :
+          '견적 요청을 전송하고 있습니다.';
+        note.className = 'form-note';
+
+        const response = await fetch(
+          'https://hxpjxebwpnepxcfighff.supabase.co/functions/v1/contact-request',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          }
+        );
+
+        const result = await response.json().catch(() => ({
+          ok: false,
+          error: `HTTP ${response.status}`
+        }));
+
+        if (!response.ok || !result.ok) {
+          throw new Error(result.error || `HTTP ${response.status}`);
+        }
+
+        note.textContent =
+          locale === 'zh' ? '报价请求已成功发送。我们将确认后回复。' :
+          locale === 'en' ? 'Your quotation request has been sent successfully.' :
+          '견적 요청이 정상적으로 전송되었습니다. 확인 후 답변드리겠습니다.';
+        note.className = 'form-note form-success';
+        form.reset();
+      } catch (error) {
+        console.error('Quotation request failed:', error);
+        note.textContent =
+          locale === 'zh' ? '发送失败，请稍后重试。' :
+          locale === 'en' ? 'The quotation request could not be sent. Please try again.' :
+          '견적 요청 전송에 실패했습니다. 잠시 후 다시 시도해 주세요.';
+        note.className = 'form-note form-error';
+      } finally {
+        if (submitButton) {
+          submitButton.disabled = false;
+          submitButton.innerHTML = originalButtonHtml;
+        }
+      }
     });
   }
 

@@ -345,569 +345,282 @@ form.addEventListener('submit', async (event) => {
   document.addEventListener('DOMContentLoaded', boot);
 })();
 
-/* ==========================================================================
-   M.O.T. PrintCore multilingual user guide
-   - This module is independent from the existing site.js IIFE above.
-   - It does not replace or modify the existing page content.
-   - Required image files:
-       assets/images/user-guide-ko.png
-       assets/images/user-guide-en.png
-       assets/images/user-guide-zh.png
-   ========================================================================== */
+/* === M.O.T. USER GUIDE MODULE : BEGIN ===
+   Appended module only. index.html is not changed.
+   Required images:
+   assets/images/user-guide-ko.png
+   assets/images/user-guide-en.png
+   assets/images/user-guide-zh.png
+*/
 (() => {
   'use strict';
 
   const MODULE_ID = 'mot-user-guide-module';
-  const LINK_ID = 'mot-user-guide-link';
-  const MODAL_ID = 'mot-user-guide-modal';
-  const STYLE_ID = 'mot-user-guide-style';
+  if (window[MODULE_ID]) return;
+  window[MODULE_ID] = true;
 
-  const content = {
+  const guides = {
     ko: {
       link: '사용자 가이드',
       title: '사용자 가이드',
-      openImage: '새 창에서 크게 보기',
-      returnHome: '메인 화면으로 돌아가기',
-      close: '닫기',
-      alt: 'M.O.T. PrintCore 웹사이트 사용자 가이드',
-      loadError: '사용자 가이드 이미지를 불러오지 못했습니다.'
+      openFull: '새 창에서 크게 보기 ↗',
+      close: '사용자 가이드 닫기',
+      alt: 'M.O.T. PrintCore 웹사이트 한국어 사용자 가이드',
+      image: 'assets/images/user-guide-ko.png'
     },
     en: {
       link: 'User Guide',
       title: 'User Guide',
-      openImage: 'Open full-size image',
-      returnHome: 'Return to main page',
-      close: 'Close',
-      alt: 'M.O.T. PrintCore website user guide',
-      loadError: 'The user guide image could not be loaded.'
+      openFull: 'Open full size in a new window ↗',
+      close: 'Close user guide',
+      alt: 'M.O.T. PrintCore website user guide in English',
+      image: 'assets/images/user-guide-en.png'
     },
     zh: {
       link: '用户指南',
       title: '用户指南',
-      openImage: '在新窗口中查看大图',
-      returnHome: '返回主页',
-      close: '关闭',
-      alt: 'M.O.T. PrintCore 网站用户指南',
-      loadError: '无法加载用户指南图片。'
+      openFull: '在新窗口中查看大图 ↗',
+      close: '关闭用户指南',
+      alt: 'M.O.T. PrintCore 网站中文用户指南',
+      image: 'assets/images/user-guide-zh.png'
     }
   };
 
-  const imageByLocale = {
-    ko: 'assets/images/user-guide-ko.png',
-    en: 'assets/images/user-guide-en.png',
-    zh: 'assets/images/user-guide-zh.png'
-  };
+  const normalizeLocale = (value) => ['ko', 'en', 'zh'].includes(value) ? value : 'ko';
+  const getLocale = () => normalizeLocale(
+    window.MOTLocale?.get?.() ||
+    document.documentElement.dataset.locale ||
+    localStorage.getItem('mot-locale') ||
+    'ko'
+  );
 
-  let activeLocale = 'ko';
-  let previousBodyOverflow = '';
-
-  function normalizeLocale(value) {
-    const locale = String(value || '').toLowerCase();
-    if (locale.startsWith('zh')) return 'zh';
-    if (locale.startsWith('en')) return 'en';
-    return 'ko';
-  }
-
-  function readLocale() {
-    const datasetLocale = document.documentElement.dataset.locale;
-    const storedLocale = localStorage.getItem('mot-locale');
-    const htmlLocale = document.documentElement.lang;
-    return normalizeLocale(datasetLocale || storedLocale || htmlLocale || 'ko');
-  }
-
-  function getFooterLinkReference() {
-    const footer = document.querySelector('footer, .site-footer');
-    if (!footer) return null;
-
-    const anchors = Array.from(footer.querySelectorAll('a'));
-    const preferred = anchors.find((anchor) => {
-      const href = anchor.getAttribute('href') || '';
-      const text = anchor.textContent.trim();
-      return /contact|project/i.test(href) ||
-        ['프로젝트 문의', 'Project Inquiry', '项目咨询'].includes(text);
-    });
-
-    return preferred || anchors.find((anchor) => {
-      const href = anchor.getAttribute('href') || '';
-      return href.startsWith('#') && href !== '#top';
-    }) || null;
-  }
-
-  function injectStyles() {
-    if (document.getElementById(STYLE_ID)) return;
-
+  function addStyles() {
+    if (document.getElementById('mot-user-guide-styles')) return;
     const style = document.createElement('style');
-    style.id = STYLE_ID;
+    style.id = 'mot-user-guide-styles';
     style.textContent = `
-      #${LINK_ID} {
-        cursor: pointer;
-      }
-
-      #${MODAL_ID}[hidden] {
-        display: none !important;
-      }
-
-      #${MODAL_ID} {
+      .mot-user-guide-link { cursor: pointer; }
+      .mot-user-guide-modal[hidden] { display: none !important; }
+      .mot-user-guide-modal {
         position: fixed;
         inset: 0;
-        z-index: 2147483000;
-        display: flex;
-        align-items: flex-start;
-        justify-content: center;
-        padding: clamp(12px, 2.5vw, 32px);
-        background: rgba(4, 12, 24, 0.82);
-        overflow-y: auto;
-        overscroll-behavior: contain;
-        -webkit-overflow-scrolling: touch;
+        z-index: 10000;
+        display: grid;
+        place-items: center;
+        padding: clamp(10px, 2.2vw, 28px);
       }
-
-      #${MODAL_ID} .mot-guide-dialog {
-        width: min(1180px, 100%);
-        margin: auto;
+      .mot-user-guide-backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(2, 12, 25, .78);
+        backdrop-filter: blur(7px);
+      }
+      .mot-user-guide-dialog {
+        position: relative;
+        width: min(1120px, 100%);
+        max-height: 94vh;
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr) auto;
         overflow: hidden;
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        border: 1px solid rgba(255,255,255,.18);
         border-radius: 18px;
-        background: #ffffff;
-        box-shadow: 0 28px 80px rgba(0, 0, 0, 0.38);
+        background: #fff;
+        box-shadow: 0 28px 90px rgba(0,0,0,.42);
       }
-
-      #${MODAL_ID} .mot-guide-header {
-        position: sticky;
-        top: 0;
-        z-index: 2;
+      .mot-user-guide-head {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 16px;
-        min-height: 64px;
-        padding: 12px 16px 12px 22px;
-        border-bottom: 1px solid #dce5f0;
-        background: rgba(255, 255, 255, 0.97);
-        backdrop-filter: blur(10px);
+        gap: 20px;
+        padding: 16px 18px 14px 22px;
+        border-bottom: 1px solid #dce5ef;
+        background: linear-gradient(135deg, #071a2f, #0d3156);
+        color: #fff;
       }
-
-      #${MODAL_ID} .mot-guide-title {
+      .mot-user-guide-kicker {
+        display: block;
+        margin-bottom: 3px;
+        font: 700 10px/1.2 'Space Mono', monospace;
+        letter-spacing: .16em;
+        color: #72c7f4;
+      }
+      .mot-user-guide-title {
         margin: 0;
-        color: #111827;
-        font-size: clamp(18px, 2vw, 25px);
-        font-weight: 750;
-        line-height: 1.25;
+        font-size: clamp(20px, 2.2vw, 30px);
+        line-height: 1.2;
+        color: #fff;
       }
-
-      #${MODAL_ID} .mot-guide-actions {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        flex-shrink: 0;
-      }
-
-      #${MODAL_ID} .mot-guide-home,
-      #${MODAL_ID} .mot-guide-full,
-      #${MODAL_ID} .mot-guide-close {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 40px;
-        border-radius: 9px;
-        font: inherit;
-        font-size: 14px;
-        font-weight: 700;
-        text-decoration: none;
-        transition: background-color 0.18s ease, border-color 0.18s ease;
-      }
-
-      #${MODAL_ID} .mot-guide-home {
-        padding: 0 15px;
-        border: 1px solid #174b8f;
-        color: #ffffff;
-        background: #174b8f;
+      .mot-user-guide-close {
+        flex: 0 0 auto;
+        width: 42px;
+        height: 42px;
+        border: 1px solid rgba(255,255,255,.28);
+        border-radius: 50%;
+        background: rgba(255,255,255,.08);
+        color: #fff;
+        font-size: 29px;
+        line-height: 1;
         cursor: pointer;
       }
-
-      #${MODAL_ID} .mot-guide-home:hover {
-        border-color: #123d75;
-        background: #123d75;
+      .mot-user-guide-close:hover,
+      .mot-user-guide-close:focus-visible {
+        background: rgba(255,255,255,.18);
+        outline: 2px solid #72c7f4;
+        outline-offset: 2px;
       }
-
-      #${MODAL_ID} .mot-guide-full {
-        padding: 0 14px;
-        border: 1px solid #cbd8e8;
-        color: #174b8f;
-        background: #f7faff;
+      .mot-user-guide-scroll {
+        min-height: 0;
+        overflow: auto;
+        overscroll-behavior: contain;
+        background: #eef3f8;
       }
-
-      #${MODAL_ID} .mot-guide-full:hover {
-        border-color: #8eafd7;
-        background: #edf5ff;
+      .mot-user-guide-image-wrap {
+        width: min(100%, 1000px);
+        margin: 0 auto;
+        padding: clamp(8px, 1.8vw, 20px);
       }
-
-      #${MODAL_ID} .mot-guide-close {
-        width: 40px;
-        padding: 0;
-        border: 1px solid #cbd8e8;
-        color: #1f2937;
-        background: #ffffff;
-        cursor: pointer;
-      }
-
-      #${MODAL_ID} .mot-guide-close:hover {
-        background: #f1f5f9;
-      }
-
-      #${MODAL_ID} .mot-guide-body {
-        position: relative;
-        min-height: 240px;
-        background: #f3f6fa;
-      }
-
-      #${MODAL_ID} .mot-guide-image {
+      .mot-user-guide-image {
         display: block;
         width: 100%;
         height: auto;
-        margin: 0 auto;
-        background: #ffffff;
+        background: #fff;
+        box-shadow: 0 8px 30px rgba(5, 27, 49, .12);
       }
-
-      #${MODAL_ID} .mot-guide-footer {
+      .mot-user-guide-actions {
         display: flex;
+        justify-content: flex-end;
+        padding: 12px 18px;
+        border-top: 1px solid #dce5ef;
+        background: #fff;
+      }
+      .mot-user-guide-full {
+        display: inline-flex;
         align-items: center;
         justify-content: center;
-        padding: 24px 16px 30px;
-        border-top: 1px solid #dce5f0;
-        background: #ffffff;
+        min-height: 42px;
+        padding: 0 17px;
+        border-radius: 999px;
+        background: #0b65d8;
+        color: #fff !important;
+        font-weight: 700;
+        text-decoration: none;
       }
-
-      #${MODAL_ID} .mot-guide-home-bottom {
-        min-width: min(360px, 100%);
-        min-height: 48px;
-        padding: 0 22px;
-        border: 1px solid #174b8f;
-        border-radius: 10px;
-        color: #ffffff;
-        background: #174b8f;
-        font: inherit;
-        font-size: 16px;
-        font-weight: 750;
-        cursor: pointer;
-        transition: background-color 0.18s ease, border-color 0.18s ease;
-      }
-
-      #${MODAL_ID} .mot-guide-home-bottom:hover {
-        border-color: #123d75;
-        background: #123d75;
-      }
-
-      #${MODAL_ID} .mot-guide-error {
-        display: none;
-        margin: 0;
-        padding: 64px 20px;
-        color: #991b1b;
-        text-align: center;
-        font-size: 16px;
-        font-weight: 650;
-      }
-
-      #${MODAL_ID}.has-image-error .mot-guide-image {
-        display: none;
-      }
-
-      #${MODAL_ID}.has-image-error .mot-guide-error {
-        display: block;
-      }
-
+      .mot-user-guide-full:hover,
+      .mot-user-guide-full:focus-visible { background: #084da5; }
+      body.mot-user-guide-open { overflow: hidden; }
       @media (max-width: 640px) {
-        #${MODAL_ID} {
-          padding: 0;
-        }
-
-        #${MODAL_ID} .mot-guide-dialog {
-          width: 100%;
-          min-height: 100%;
-          border: 0;
-          border-radius: 0;
-        }
-
-        #${MODAL_ID} .mot-guide-header {
-          min-height: 58px;
-          padding: 9px 10px 9px 15px;
-        }
-
-        #${MODAL_ID} .mot-guide-home {
-          min-height: 40px;
-          padding: 0 10px;
-          font-size: 12px;
-        }
-
-        #${MODAL_ID} .mot-guide-full {
-          width: 40px;
-          padding: 0;
-          overflow: hidden;
-          color: transparent;
-          font-size: 0;
-        }
-
-        #${MODAL_ID} .mot-guide-full::before {
-          content: '↗';
-          color: #174b8f;
-          font-size: 20px;
-        }
+        .mot-user-guide-modal { padding: 0; }
+        .mot-user-guide-dialog { width: 100%; max-height: 100dvh; height: 100dvh; border-radius: 0; }
+        .mot-user-guide-head { padding: 12px 12px 11px 16px; }
+        .mot-user-guide-actions { justify-content: stretch; padding: 10px 12px; }
+        .mot-user-guide-full { width: 100%; }
+        .mot-user-guide-image-wrap { padding: 6px; }
       }
     `;
     document.head.appendChild(style);
   }
 
   function createModal() {
-    if (document.getElementById(MODAL_ID)) {
-      return document.getElementById(MODAL_ID);
-    }
-
     const modal = document.createElement('div');
-    modal.id = MODAL_ID;
+    modal.id = 'mot-user-guide-modal';
+    modal.className = 'mot-user-guide-modal';
     modal.hidden = true;
     modal.setAttribute('role', 'dialog');
     modal.setAttribute('aria-modal', 'true');
-    modal.setAttribute('aria-labelledby', `${MODAL_ID}-title`);
-
-    const dialog = document.createElement('div');
-    dialog.className = 'mot-guide-dialog';
-
-    const header = document.createElement('div');
-    header.className = 'mot-guide-header';
-
-    const title = document.createElement('h2');
-    title.id = `${MODAL_ID}-title`;
-    title.className = 'mot-guide-title';
-
-    const actions = document.createElement('div');
-    actions.className = 'mot-guide-actions';
-
-    const homeButton = document.createElement('button');
-    homeButton.className = 'mot-guide-home';
-    homeButton.type = 'button';
-
-    const fullLink = document.createElement('a');
-    fullLink.className = 'mot-guide-full';
-    fullLink.target = '_blank';
-    fullLink.rel = 'noopener noreferrer';
-
-    const closeButton = document.createElement('button');
-    closeButton.className = 'mot-guide-close';
-    closeButton.type = 'button';
-    closeButton.textContent = '×';
-
-    actions.append(homeButton, fullLink, closeButton);
-    header.append(title, actions);
-
-    const body = document.createElement('div');
-    body.className = 'mot-guide-body';
-
-    const image = document.createElement('img');
-    image.className = 'mot-guide-image';
-    image.decoding = 'async';
-
-    const error = document.createElement('p');
-    error.className = 'mot-guide-error';
-
-    const footer = document.createElement('div');
-    footer.className = 'mot-guide-footer';
-
-    const bottomHomeButton = document.createElement('button');
-    bottomHomeButton.className = 'mot-guide-home-bottom';
-    bottomHomeButton.type = 'button';
-
-    footer.append(bottomHomeButton);
-    body.append(image, error);
-    dialog.append(header, body, footer);
-    modal.append(dialog);
+    modal.setAttribute('aria-labelledby', 'mot-user-guide-title');
+    modal.innerHTML = `
+      <div class="mot-user-guide-backdrop" data-guide-close aria-hidden="true"></div>
+      <section class="mot-user-guide-dialog" tabindex="-1">
+        <header class="mot-user-guide-head">
+          <div>
+            <span class="mot-user-guide-kicker">M.O.T. PRINTCORE</span>
+            <h2 class="mot-user-guide-title" id="mot-user-guide-title"></h2>
+          </div>
+          <button class="mot-user-guide-close" type="button" data-guide-close>×</button>
+        </header>
+        <div class="mot-user-guide-scroll">
+          <div class="mot-user-guide-image-wrap">
+            <img class="mot-user-guide-image" alt="" decoding="async" />
+          </div>
+        </div>
+        <footer class="mot-user-guide-actions">
+          <a class="mot-user-guide-full" target="_blank" rel="noopener"></a>
+        </footer>
+      </section>
+    `;
     document.body.appendChild(modal);
-
-    homeButton.addEventListener('click', returnToMain);
-    bottomHomeButton.addEventListener('click', returnToMain);
-    closeButton.addEventListener('click', closeGuide);
-    modal.addEventListener('click', (event) => {
-      if (event.target === modal) closeGuide();
-    });
-
-    image.addEventListener('load', () => {
-      modal.classList.remove('has-image-error');
-    });
-    image.addEventListener('error', () => {
-      modal.classList.add('has-image-error');
-    });
-
     return modal;
   }
 
-  function updateGuideLocale(nextLocale) {
-    activeLocale = normalizeLocale(nextLocale || readLocale());
-
-    const text = content[activeLocale];
-    const imagePath = imageByLocale[activeLocale];
-    const link = document.getElementById(LINK_ID);
-    const modal = document.getElementById(MODAL_ID);
-
-    if (link) {
-      link.textContent = text.link;
-      link.setAttribute('aria-label', text.link);
-      link.setAttribute('title', text.link);
-    }
-
-    if (!modal) return;
-
-    const title = modal.querySelector('.mot-guide-title');
-    const homeButton = modal.querySelector('.mot-guide-home');
-    const bottomHomeButton = modal.querySelector('.mot-guide-home-bottom');
-    const fullLink = modal.querySelector('.mot-guide-full');
-    const closeButton = modal.querySelector('.mot-guide-close');
-    const image = modal.querySelector('.mot-guide-image');
-    const error = modal.querySelector('.mot-guide-error');
-
-    if (title) title.textContent = text.title;
-    if (homeButton) {
-      homeButton.textContent = text.returnHome;
-      homeButton.setAttribute('aria-label', text.returnHome);
-      homeButton.setAttribute('title', text.returnHome);
-    }
-    if (bottomHomeButton) {
-      bottomHomeButton.textContent = text.returnHome;
-      bottomHomeButton.setAttribute('aria-label', text.returnHome);
-      bottomHomeButton.setAttribute('title', text.returnHome);
-    }
-    if (fullLink) {
-      fullLink.textContent = text.openImage;
-      fullLink.href = imagePath;
-      fullLink.setAttribute('aria-label', text.openImage);
-      fullLink.setAttribute('title', text.openImage);
-    }
-    if (closeButton) {
-      closeButton.setAttribute('aria-label', text.close);
-      closeButton.setAttribute('title', text.close);
-    }
-    if (error) error.textContent = text.loadError;
-    if (image) {
-      image.alt = text.alt;
-      modal.classList.remove('has-image-error');
-      if (image.getAttribute('src') !== imagePath) image.src = imagePath;
-    }
+  function findFooterContactLink() {
+    const footer = document.querySelector('footer');
+    if (!footer) return null;
+    return Array.from(footer.querySelectorAll('a[href]')).find((anchor) => {
+      const href = (anchor.getAttribute('href') || '').trim();
+      return href === '#contact';
+    }) || null;
   }
 
-  function openGuide(event) {
-    event?.preventDefault();
+  function init() {
+    const contactLink = findFooterContactLink();
+    if (!contactLink || document.getElementById('mot-user-guide-link')) return;
 
+    addStyles();
     const modal = createModal();
-    updateGuideLocale(readLocale());
-
-    previousBodyOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    modal.hidden = false;
-
-    requestAnimationFrame(() => {
-      modal.querySelector('.mot-guide-close')?.focus();
-    });
-  }
-
-  function closeGuide(options = {}) {
-    const modal = document.getElementById(MODAL_ID);
-    if (!modal || modal.hidden) return;
-
-    modal.hidden = true;
-    document.body.style.overflow = previousBodyOverflow;
-
-    if (options.restoreFocus !== false) {
-      document.getElementById(LINK_ID)?.focus();
-    }
-  }
-
-  function returnToMain(event) {
-    event?.preventDefault();
-    closeGuide({ restoreFocus: false });
-
-    window.requestAnimationFrame(() => {
-      window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
-
-      const mainLink = document.querySelector(
-        '.site-header a, header a, a[href="#top"], a[href="./"], a[href="index.html"]'
-      );
-      try {
-        mainLink?.focus({ preventScroll: true });
-      } catch (_) {
-        mainLink?.focus();
-      }
-    });
-  }
-
-  function createFooterLink() {
-    const existing = document.getElementById(LINK_ID);
-    if (existing) return existing;
-
-    const reference = getFooterLinkReference();
-    if (!reference || !reference.parentElement) return null;
+    const dialog = modal.querySelector('.mot-user-guide-dialog');
+    const image = modal.querySelector('.mot-user-guide-image');
+    const title = modal.querySelector('.mot-user-guide-title');
+    const full = modal.querySelector('.mot-user-guide-full');
+    const closeButton = modal.querySelector('.mot-user-guide-close');
 
     const link = document.createElement('a');
-    link.id = LINK_ID;
+    link.id = 'mot-user-guide-link';
+    link.className = `${contactLink.className || ''} mot-user-guide-link`.trim();
     link.href = '#user-guide';
-    link.className = reference.className;
-    link.dataset.motUserGuide = 'true';
-    link.addEventListener('click', openGuide);
+    contactLink.insertAdjacentElement('afterend', link);
 
-    reference.insertAdjacentElement('afterend', link);
-    return link;
-  }
+    let previousFocus = null;
 
-  function bindLocaleChanges() {
-    const localeHandler = (event) => {
-      const detail = event?.detail;
-      const nextLocale =
-        (typeof detail === 'string' && detail) ||
-        detail?.locale ||
-        detail?.lang ||
-        readLocale();
-      updateGuideLocale(nextLocale);
-    };
-
-    window.addEventListener('mot:localechange', localeHandler);
-    document.addEventListener('mot:localechange', localeHandler);
-
-    if (window.MOTLocale && typeof window.MOTLocale.subscribe === 'function') {
-      window.MOTLocale.subscribe((nextLocale) => {
-        updateGuideLocale(nextLocale);
-      });
+    function applyLanguage(localeValue) {
+      const locale = normalizeLocale(localeValue || getLocale());
+      const guide = guides[locale];
+      link.textContent = guide.link;
+      link.setAttribute('aria-label', guide.link);
+      title.textContent = guide.title;
+      closeButton.setAttribute('aria-label', guide.close);
+      image.src = guide.image;
+      image.alt = guide.alt;
+      full.href = guide.image;
+      full.textContent = guide.openFull;
     }
 
-    document.querySelectorAll('.lang-btn').forEach((button) => {
-      button.addEventListener('click', () => {
-        window.setTimeout(() => updateGuideLocale(button.dataset.lang), 0);
-      });
-    });
-  }
+    function openGuide(event) {
+      event?.preventDefault();
+      previousFocus = document.activeElement;
+      applyLanguage();
+      modal.hidden = false;
+      document.body.classList.add('mot-user-guide-open');
+      requestAnimationFrame(() => dialog.focus());
+    }
 
-  function bindKeyboard() {
+    function closeGuide() {
+      if (modal.hidden) return;
+      modal.hidden = true;
+      document.body.classList.remove('mot-user-guide-open');
+      if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus();
+    }
+
+    link.addEventListener('click', openGuide);
+    modal.querySelectorAll('[data-guide-close]').forEach((node) => node.addEventListener('click', closeGuide));
     document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape') closeGuide();
+      if (event.key === 'Escape' && !modal.hidden) closeGuide();
     });
+    document.addEventListener('mot:localechange', (event) => applyLanguage(event.detail?.locale));
+
+    applyLanguage();
   }
 
-  function bootUserGuide() {
-    if (document.documentElement.dataset.motUserGuideReady === 'true') return;
-    document.documentElement.dataset.motUserGuideReady = 'true';
-
-    injectStyles();
-    createModal();
-    createFooterLink();
-    bindLocaleChanges();
-    bindKeyboard();
-    updateGuideLocale(readLocale());
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', bootUserGuide, { once: true });
-  } else {
-    bootUserGuide();
-  }
-
-  window[MODULE_ID] = {
-    open: openGuide,
-    close: closeGuide,
-    setLocale: updateGuideLocale
-  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
 })();
+/* === M.O.T. USER GUIDE MODULE : END === */

@@ -7,6 +7,6 @@ window.MOT_CONFIG = {
   contactEmail: "jeongjae_choi@naver.com",
   phoneDisplay: "+82 10 7502 0845",
   phoneLink: "+821075020845",
-  wechat: "jeongjae0603",
+  wechat: "choijjai",
   siteUrl: "https://jeong67jea.github.io/mot-printcore.com/"
 };

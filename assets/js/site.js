@@ -367,6 +367,7 @@ form.addEventListener('submit', async (event) => {
       link: '사용자 가이드',
       title: '사용자 가이드',
       openImage: '새 창에서 크게 보기',
+      returnHome: '메인 화면으로 돌아가기',
       close: '닫기',
       alt: 'M.O.T. PrintCore 웹사이트 사용자 가이드',
       loadError: '사용자 가이드 이미지를 불러오지 못했습니다.'
@@ -375,6 +376,7 @@ form.addEventListener('submit', async (event) => {
       link: 'User Guide',
       title: 'User Guide',
       openImage: 'Open full-size image',
+      returnHome: 'Return to main page',
       close: 'Close',
       alt: 'M.O.T. PrintCore website user guide',
       loadError: 'The user guide image could not be loaded.'
@@ -383,6 +385,7 @@ form.addEventListener('submit', async (event) => {
       link: '用户指南',
       title: '用户指南',
       openImage: '在新窗口中查看大图',
+      returnHome: '返回主页',
       close: '关闭',
       alt: 'M.O.T. PrintCore 网站用户指南',
       loadError: '无法加载用户指南图片。'
@@ -498,6 +501,7 @@ form.addEventListener('submit', async (event) => {
         flex-shrink: 0;
       }
 
+      #${MODAL_ID} .mot-guide-home,
       #${MODAL_ID} .mot-guide-full,
       #${MODAL_ID} .mot-guide-close {
         display: inline-flex;
@@ -510,6 +514,19 @@ form.addEventListener('submit', async (event) => {
         font-weight: 700;
         text-decoration: none;
         transition: background-color 0.18s ease, border-color 0.18s ease;
+      }
+
+      #${MODAL_ID} .mot-guide-home {
+        padding: 0 15px;
+        border: 1px solid #174b8f;
+        color: #ffffff;
+        background: #174b8f;
+        cursor: pointer;
+      }
+
+      #${MODAL_ID} .mot-guide-home:hover {
+        border-color: #123d75;
+        background: #123d75;
       }
 
       #${MODAL_ID} .mot-guide-full {
@@ -551,6 +568,35 @@ form.addEventListener('submit', async (event) => {
         background: #ffffff;
       }
 
+      #${MODAL_ID} .mot-guide-footer {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px 16px 30px;
+        border-top: 1px solid #dce5f0;
+        background: #ffffff;
+      }
+
+      #${MODAL_ID} .mot-guide-home-bottom {
+        min-width: min(360px, 100%);
+        min-height: 48px;
+        padding: 0 22px;
+        border: 1px solid #174b8f;
+        border-radius: 10px;
+        color: #ffffff;
+        background: #174b8f;
+        font: inherit;
+        font-size: 16px;
+        font-weight: 750;
+        cursor: pointer;
+        transition: background-color 0.18s ease, border-color 0.18s ease;
+      }
+
+      #${MODAL_ID} .mot-guide-home-bottom:hover {
+        border-color: #123d75;
+        background: #123d75;
+      }
+
       #${MODAL_ID} .mot-guide-error {
         display: none;
         margin: 0;
@@ -584,6 +630,12 @@ form.addEventListener('submit', async (event) => {
         #${MODAL_ID} .mot-guide-header {
           min-height: 58px;
           padding: 9px 10px 9px 15px;
+        }
+
+        #${MODAL_ID} .mot-guide-home {
+          min-height: 40px;
+          padding: 0 10px;
+          font-size: 12px;
         }
 
         #${MODAL_ID} .mot-guide-full {
@@ -629,6 +681,10 @@ form.addEventListener('submit', async (event) => {
     const actions = document.createElement('div');
     actions.className = 'mot-guide-actions';
 
+    const homeButton = document.createElement('button');
+    homeButton.className = 'mot-guide-home';
+    homeButton.type = 'button';
+
     const fullLink = document.createElement('a');
     fullLink.className = 'mot-guide-full';
     fullLink.target = '_blank';
@@ -639,7 +695,7 @@ form.addEventListener('submit', async (event) => {
     closeButton.type = 'button';
     closeButton.textContent = '×';
 
-    actions.append(fullLink, closeButton);
+    actions.append(homeButton, fullLink, closeButton);
     header.append(title, actions);
 
     const body = document.createElement('div');
@@ -652,11 +708,21 @@ form.addEventListener('submit', async (event) => {
     const error = document.createElement('p');
     error.className = 'mot-guide-error';
 
+    const footer = document.createElement('div');
+    footer.className = 'mot-guide-footer';
+
+    const bottomHomeButton = document.createElement('button');
+    bottomHomeButton.className = 'mot-guide-home-bottom';
+    bottomHomeButton.type = 'button';
+
+    footer.append(bottomHomeButton);
     body.append(image, error);
-    dialog.append(header, body);
+    dialog.append(header, body, footer);
     modal.append(dialog);
     document.body.appendChild(modal);
 
+    homeButton.addEventListener('click', returnToMain);
+    bottomHomeButton.addEventListener('click', returnToMain);
     closeButton.addEventListener('click', closeGuide);
     modal.addEventListener('click', (event) => {
       if (event.target === modal) closeGuide();
@@ -689,12 +755,24 @@ form.addEventListener('submit', async (event) => {
     if (!modal) return;
 
     const title = modal.querySelector('.mot-guide-title');
+    const homeButton = modal.querySelector('.mot-guide-home');
+    const bottomHomeButton = modal.querySelector('.mot-guide-home-bottom');
     const fullLink = modal.querySelector('.mot-guide-full');
     const closeButton = modal.querySelector('.mot-guide-close');
     const image = modal.querySelector('.mot-guide-image');
     const error = modal.querySelector('.mot-guide-error');
 
     if (title) title.textContent = text.title;
+    if (homeButton) {
+      homeButton.textContent = text.returnHome;
+      homeButton.setAttribute('aria-label', text.returnHome);
+      homeButton.setAttribute('title', text.returnHome);
+    }
+    if (bottomHomeButton) {
+      bottomHomeButton.textContent = text.returnHome;
+      bottomHomeButton.setAttribute('aria-label', text.returnHome);
+      bottomHomeButton.setAttribute('title', text.returnHome);
+    }
     if (fullLink) {
       fullLink.textContent = text.openImage;
       fullLink.href = imagePath;
@@ -728,13 +806,34 @@ form.addEventListener('submit', async (event) => {
     });
   }
 
-  function closeGuide() {
+  function closeGuide(options = {}) {
     const modal = document.getElementById(MODAL_ID);
     if (!modal || modal.hidden) return;
 
     modal.hidden = true;
     document.body.style.overflow = previousBodyOverflow;
-    document.getElementById(LINK_ID)?.focus();
+
+    if (options.restoreFocus !== false) {
+      document.getElementById(LINK_ID)?.focus();
+    }
+  }
+
+  function returnToMain(event) {
+    event?.preventDefault();
+    closeGuide({ restoreFocus: false });
+
+    window.requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+
+      const mainLink = document.querySelector(
+        '.site-header a, header a, a[href="#top"], a[href="./"], a[href="index.html"]'
+      );
+      try {
+        mainLink?.focus({ preventScroll: true });
+      } catch (_) {
+        mainLink?.focus();
+      }
+    });
   }
 
   function createFooterLink() {

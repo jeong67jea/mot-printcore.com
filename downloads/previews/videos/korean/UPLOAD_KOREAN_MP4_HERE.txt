@@ -1,0 +1,4 @@
+이 폴더에 한국어 공개 영상 Preview MP4를 업로드하십시오.
+
+파일명은 VIDEO_UPLOAD_FILE_LIST.csv와 정확히 일치해야 합니다.
+GitHub 웹브라우저 업로드를 사용할 경우 MP4 한 파일을 25 MiB 미만으로 준비하십시오.

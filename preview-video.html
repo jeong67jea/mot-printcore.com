@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="index,follow">
+  <title>영상 Preview | M.O.T. PrintCore Academy</title>
+  <link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/academy.css">
+  <style>
+    body { margin: 0; background: #f4f7fb; color: #111827; font-family: Manrope, "Noto Sans KR", "Noto Sans SC", sans-serif; }
+    .vp-shell { width: min(1120px, calc(100% - 32px)); margin: 0 auto; padding: 42px 0 72px; }
+    .vp-top { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 24px; }
+    .vp-back { color: #1b4f72; font-weight: 800; text-decoration: none; }
+    .vp-languages { display: flex; gap: 8px; }
+    .vp-languages button { min-height: 40px; padding: 0 15px; border: 1px solid #bfd0dc; background: #fff; color: #244a63; font: inherit; font-weight: 800; cursor: pointer; }
+    .vp-languages button.is-active { border-color: #0b5e96; background: #0b5e96; color: #fff; }
+    .vp-card { overflow: hidden; border: 1px solid #dce5ed; border-radius: 18px; background: #fff; box-shadow: 0 18px 45px rgba(24, 52, 72, .10); }
+    .vp-copy { padding: 28px 30px 22px; }
+    .vp-label { margin: 0 0 8px; color: #1f5eff; font-size: 13px; font-weight: 800; letter-spacing: .10em; text-transform: uppercase; }
+    .vp-copy h1 { margin: 0; font-size: clamp(26px, 4vw, 40px); line-height: 1.25; }
+    .vp-description { margin: 14px 0 0; color: #526371; font-size: 16px; line-height: 1.75; }
+    .vp-stage { padding: 0 30px 30px; }
+    video { display: block; width: 100%; max-height: 72vh; background: #000; border-radius: 12px; }
+    .vp-note { margin: 16px 0 0; color: #6b7280; font-size: 14px; line-height: 1.65; }
+    .vp-error { padding: 60px 30px; text-align: center; }
+    .vp-error h1 { margin: 0 0 12px; }
+    .vp-error p { color: #5d6c78; line-height: 1.7; }
+    @media (max-width: 640px) {
+      .vp-shell { width: min(100% - 22px, 1120px); padding-top: 24px; }
+      .vp-top { align-items: flex-start; flex-direction: column; }
+      .vp-copy, .vp-stage { padding-left: 18px; padding-right: 18px; }
+      .vp-languages { width: 100%; }
+      .vp-languages button { flex: 1; }
+    }
+  </style>
+  <script src="assets/js/preview-video-catalog.js"></script>
+</head>
+<body>
+  <main class="vp-shell">
+    <div class="vp-top">
+      <a class="vp-back" id="vp-back" href="academy.html#technical-book-previews">← Preview 목록으로</a>
+      <div class="vp-languages" id="vp-languages" aria-label="영상 언어 선택">
+        <button type="button" data-video-lang="ko">한국어</button>
+        <button type="button" data-video-lang="zh">中文</button>
+      </div>
+    </div>
+
+    <section class="vp-card" id="vp-content" hidden>
+      <div class="vp-copy">
+        <p class="vp-label" id="vp-label">PUBLIC VIDEO PREVIEW</p>
+        <h1 id="vp-title"></h1>
+        <p class="vp-description" id="vp-description"></p>
+      </div>
+      <div class="vp-stage">
+        <video id="vp-player" controls playsinline preload="metadata">
+          <source id="vp-source" type="video/mp4">
+          이 브라우저에서는 MP4 영상을 재생할 수 없습니다.
+        </video>
+        <p class="vp-note" id="vp-note">공개 Preview 영상입니다. 정식 과정 전체 내용은 포함하지 않습니다.</p>
+      </div>
+    </section>
+
+    <section class="vp-card vp-error" id="vp-error" hidden>
+      <h1 id="vp-error-title">영상을 찾을 수 없습니다.</h1>
+      <p id="vp-error-text">영상 번호, 공개 설정, MP4 파일명과 폴더 위치를 확인하십시오.</p>
+    </section>
+  </main>
+
+  <script>
+    (function () {
+      'use strict';
+      const ui = {
+        ko: {
+          back: '← Preview 목록으로', label: 'PUBLIC VIDEO PREVIEW', note: '공개 Preview 영상입니다. 정식 과정 전체 내용은 포함하지 않습니다.',
+          errorTitle: '영상을 찾을 수 없습니다.', errorText: '영상 번호, 공개 설정, MP4 파일명과 폴더 위치를 확인하십시오.',
+          loadError: 'MP4 파일을 불러오지 못했습니다. GitHub 경로와 파일명이 목록과 정확히 일치하는지 확인하십시오.'
+        },
+        zh: {
+          back: '← 返回 Preview 列表', label: 'PUBLIC VIDEO PREVIEW', note: '这是公开视频 Preview，不包含正式课程的全部内容。',
+          errorTitle: '无法找到视频。', errorText: '请确认视频编号、公开设置、MP4 文件名及文件夹位置。',
+          loadError: '无法加载 MP4 文件。请确认 GitHub 路径和文件名与目录完全一致。'
+        }
+      };
+
+      const params = new URLSearchParams(location.search);
+      const no = String(params.get('id') || '').padStart(2, '0');
+      let videoLang = params.get('lang') === 'zh' ? 'zh' : 'ko';
+      const catalog = window.MOTPreviewVideoCatalog;
+      const course = catalog && catalog.getCourse(no);
+
+      const content = document.getElementById('vp-content');
+      const error = document.getElementById('vp-error');
+      const player = document.getElementById('vp-player');
+      const source = document.getElementById('vp-source');
+
+      function showError(message) {
+        const t = ui[videoLang];
+        content.hidden = true;
+        error.hidden = false;
+        document.getElementById('vp-error-title').textContent = t.errorTitle;
+        document.getElementById('vp-error-text').textContent = message || t.errorText;
+      }
+
+      function render() {
+        const t = ui[videoLang];
+        document.documentElement.lang = videoLang === 'zh' ? 'zh-CN' : 'ko';
+        document.getElementById('vp-back').textContent = t.back;
+        document.getElementById('vp-label').textContent = t.label;
+        document.getElementById('vp-note').textContent = t.note;
+        document.querySelectorAll('[data-video-lang]').forEach((button) => {
+          button.classList.toggle('is-active', button.dataset.videoLang === videoLang);
+          button.setAttribute('aria-pressed', button.dataset.videoLang === videoLang ? 'true' : 'false');
+        });
+
+        if (!catalog || !course || !catalog.isPublished(no)) {
+          showError();
+          return;
+        }
+
+        const title = videoLang === 'zh' ? course.zhTitle : course.koTitle;
+        const description = videoLang === 'zh' ? course.zhDesc : course.koDesc;
+        const file = videoLang === 'zh' ? course.zhFile : course.koFile;
+
+        error.hidden = true;
+        content.hidden = false;
+        document.title = title + ' | M.O.T. PrintCore Academy';
+        document.getElementById('vp-title').textContent = title;
+        document.getElementById('vp-description').textContent = description;
+        source.src = file;
+        player.load();
+        history.replaceState(null, '', 'preview-video.html?id=' + encodeURIComponent(no) + '&lang=' + videoLang);
+      }
+
+      document.querySelectorAll('[data-video-lang]').forEach((button) => {
+        button.addEventListener('click', function () {
+          videoLang = button.dataset.videoLang === 'zh' ? 'zh' : 'ko';
+          render();
+        });
+      });
+
+      player.addEventListener('error', function () {
+        showError(ui[videoLang].loadError);
+      });
+
+      render();
+    })();
+  </script>
+</body>
+</html>

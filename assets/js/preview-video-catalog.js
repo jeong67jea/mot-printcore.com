@@ -16,7 +16,7 @@
 
   // ===== 사용자가 수정할 곳 =====
   const PUBLISH_ALL = false;
-  const PUBLISHED_VIDEO_NOS = [];
+  const PUBLISHED_VIDEO_NOS = ['01'];
   // ============================
 
   const COURSES = [

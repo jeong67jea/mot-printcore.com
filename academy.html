@@ -6,6 +6,7 @@
   <meta name="description" content="M.O.T. PrintCore Academy — secure technical PDF downloads and video courses.">
   <meta name="robots" content="index,follow">
   <title>M.O.T. PrintCore Academy | Secure Technical Content</title>
+  <!-- STATIC_VIDEO_PREVIEW_BUILD: 20260724_05 -->
   <link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Noto+Sans+KR:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -399,6 +400,32 @@
         </div>
       </article>
 
+
+      <!-- 공개 영상 Preview: 정적 카드 방식 -->
+      <article class="preview-card preview-video-card"
+               data-preview-type="video"
+               data-video-no="01"
+               data-ko-title="디지털 디자인 프로세스를 통한 제품 개발에 대한 비디오 강좌"
+               data-en-title="Video Course on Product Development Through the Digital Design Process"
+               data-zh-title="通过数字设计流程进行产品开发的视频课程"
+               data-ko-desc="디지털 디자인 프로세스를 활용하여 표준 설계에 의한 제품 개발 방법을 소개하는 영상 Preview입니다."
+               data-en-desc="A video preview introducing product-development methods based on standard design through a digital design process."
+               data-zh-desc="这是介绍通过数字化设计流程，基于标准设计进行产品开发方法的视频预览。">
+        <span class="book-no">V01</span>
+        <h3>디지털 디자인 프로세스를 통한 제품 개발에 대한 비디오 강좌</h3>
+        <p>디지털 디자인 프로세스를 활용하여 표준 설계에 의한 제품 개발 방법을 소개하는 영상 Preview입니다.</p>
+        <div class="preview-buttons">
+          <a href="downloads/previews/videos/korean/kr_01_DDMC_Preview.mp4"
+             target="_blank"
+             rel="noopener"
+             data-video-button="ko">한국어 영상</a>
+          <a href="downloads/previews/videos/chinese/cn_01_DDMC_Preview.mp4"
+             target="_blank"
+             rel="noopener"
+             data-video-button="zh">中文 영상</a>
+        </div>
+      </article>
+
     </div>
 
     <div class="preview-empty" id="preview-empty" role="status" aria-live="polite" hidden>
@@ -661,9 +688,6 @@
 </main>
 <footer class="a-footer"><div class="a-container a-footer-inner"><div><strong>M.O.T. PRINTCORE ACADEMY</strong><p data-ai18n="footer">M.O.T. PRINTCORE ENGINEERING · KNOWLEDGE ASSET · SECURE ACCESS</p></div><nav><a href="terms.html" data-ai18n="legalTerms">Terms</a><a href="privacy.html" data-ai18n="legalPrivacy">Privacy</a><a href="refund.html" data-ai18n="legalRefund">Refund &amp; Subscription Policy</a></nav></div></footer>
 <div id="academy-login-modal" class="a-login-modal" role="dialog" aria-modal="true" aria-labelledby="academy-login-heading"><div class="a-modal-card"><button id="academy-login-close" class="a-auth" type="button" data-ai18n="close">Close</button><p class="a-label" data-ai18n="accountAccess">ACCOUNT ACCESS</p><h2 id="academy-login-heading" data-ai18n="loginTitle">Sign in to PrintCore Academy</h2><p data-ai18n="loginLead">Purchases and subscriptions are attached to your email account.</p><form id="academy-login-form"><div class="a-field"><label for="academy-login-email" data-ai18n="email">Email address</label><input id="academy-login-email" type="email" required autocomplete="email" data-ai18n-placeholder="email"></div><div class="a-modal-actions"><button id="academy-login-submit" class="a-button a-primary" type="submit" data-ai18n="sendMagicLink">Send sign-in link</button></div></form></div></div>
-
-  <script src="assets/js/preview-video-catalog.js?v=20260724_02"></script>
-
 <script>
 /*
   M.O.T. PrintCore Academy - Preview section language bridge
@@ -901,6 +925,40 @@
       if (buttons[0]) buttons[0].textContent = h.koButton;
       if (buttons[1]) buttons[1].textContent = h.zhButton;
     });
+
+
+    const videoButtonText = {
+      ko: { ko: '한국어 영상', zh: '中文 영상' },
+      en: { ko: 'Korean Video', zh: 'Chinese Video' },
+      zh: { ko: '韩文视频', zh: '中文视频' }
+    };
+
+    section.querySelectorAll('.preview-card[data-preview-type="video"]').forEach((card) => {
+      const title = card.querySelector('h3');
+      const desc = card.querySelector('p');
+      const koVideoButton = card.querySelector('[data-video-button="ko"]');
+      const zhVideoButton = card.querySelector('[data-video-button="zh"]');
+
+      if (title) {
+        title.textContent = current === 'en'
+          ? card.getAttribute('data-en-title')
+          : current === 'zh'
+            ? card.getAttribute('data-zh-title')
+            : card.getAttribute('data-ko-title');
+      }
+
+      if (desc) {
+        desc.textContent = current === 'en'
+          ? card.getAttribute('data-en-desc')
+          : current === 'zh'
+            ? card.getAttribute('data-zh-desc')
+            : card.getAttribute('data-ko-desc');
+      }
+
+      if (koVideoButton) koVideoButton.textContent = videoButtonText[current].ko;
+      if (zhVideoButton) zhVideoButton.textContent = videoButtonText[current].zh;
+    });
+
 
     section.setAttribute('data-preview-lang', current);
     applyPreviewFilter(activePreviewFilter);

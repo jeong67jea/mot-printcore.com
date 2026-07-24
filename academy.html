@@ -44,24 +44,32 @@
 <section class="preview-section" id="technical-book-previews">
   <div class="preview-container">
 
-    <div class="preview-header">
-      <p class="preview-label">Technical Book Preview</p>
-      <h2>기술서적 Preview PDF</h2>
-      <p class="preview-description">
-        구매 전 책의 구성, 핵심 기술 범위, 적용 분야, 기술적 배경을 확인할 수 있는 홍보용 Preview 자료입니다.
-        한국어판과 중국어판을 각각 제공합니다.
-      </p>
+    <div class="preview-heading-row">
+      <div class="preview-header">
+        <p class="preview-label">Preview Catalog</p>
+        <h2>기술자료 · 교육 Preview</h2>
+        <p class="preview-description">
+          구매 전 책의 구성, 핵심 기술 범위, 적용 분야와 영상 과정의 내용을 확인할 수 있는 공개 Preview 자료입니다.
+          기술서적 PDF와 영상 과정을 구분하여 확인할 수 있습니다.
+        </p>
+      </div>
+
+      <div class="preview-filter" role="group" aria-label="Preview 콘텐츠 필터">
+        <button type="button" class="is-active" data-preview-filter="all" aria-pressed="true" aria-controls="preview-content-grid">전체</button>
+        <button type="button" data-preview-filter="pdf" aria-pressed="false" aria-controls="preview-content-grid">기술서적 PDF</button>
+        <button type="button" data-preview-filter="video" aria-pressed="false" aria-controls="preview-content-grid">영상 과정</button>
+      </div>
     </div>
 
     <div class="preview-notice">
       <strong>안내:</strong>
-      Preview PDF는 기술서의 일부 내용을 소개하기 위한 자료입니다.
-      상세 설계 기준, 정량 조건, 공정 Recipe, 검증 방법, 관리 기준은 정식 PDF 본문에 포함되어 있습니다.
+      Preview는 기술서적과 영상 과정의 일부 내용을 소개하기 위한 자료입니다.
+      상세 설계 기준, 정량 조건, 공정 Recipe, 검증 방법, 관리 기준은 정식 PDF 또는 정식 영상 과정에 포함되어 있습니다.
     </div>
 
-    <div class="preview-grid">
+    <div class="preview-grid" id="preview-content-grid">
 
-      <article class="preview-card">
+      <article class="preview-card" data-preview-type="pdf">
         <span class="book-no">01</span>
         <h3>자동현상제 보충 시스템 설계 기술서</h3>
         <p>ADR 구조, 현상제 보충 제어, 농도 안정화 설계에 대한 Preview입니다.</p>
@@ -71,7 +79,7 @@
         </div>
       </article>
 
-      <article class="preview-card">
+      <article class="preview-card" data-preview-type="pdf">
         <span class="book-no">02</span>
         <h3>고지대 환경 전사 보정 기술서</h3>
         <p>고지대 환경에서 발생하는 전사 특성 변화와 보정 설계에 대한 Preview입니다.</p>
@@ -81,7 +89,7 @@
         </div>
       </article>
 
-      <article class="preview-card">
+      <article class="preview-card" data-preview-type="pdf">
         <span class="book-no">03</span>
         <h3>1성분 점핑 Magnetic Roller 설계 표준 기술서</h3>
         <p>1성분 점핑 현상 방식의 Magnetic Roller 설계 기준에 대한 Preview입니다.</p>
@@ -91,7 +99,7 @@
         </div>
       </article>
 
-      <article class="preview-card">
+      <article class="preview-card" data-preview-type="pdf">
         <span class="book-no">04</span>
         <h3>1성분 현상 기술서</h3>
         <p>1성분 현상 시스템의 기본 원리, 설계 변수, 화상 품질 영향에 대한 Preview입니다.</p>
@@ -101,7 +109,7 @@
         </div>
       </article>
 
-      <article class="preview-card">
+      <article class="preview-card" data-preview-type="pdf">
         <span class="book-no">05</span>
         <h3>Carrier 설계 표준 기술서</h3>
         <p>2성분 현상용 Carrier 입자, 자성 특성, 대전 특성 설계에 대한 Preview입니다.</p>
@@ -111,7 +119,7 @@
         </div>
       </article>
 
-      <article class="preview-card">
+      <article class="preview-card" data-preview-type="pdf">
         <span class="book-no">06</span>
         <h3>Cleaning Blade 설계 표준 기술서</h3>
         <p>Cleaning Blade의 재료, 형상, 접촉 조건, 마모 및 Cleaning 성능에 대한 Preview입니다.</p>
@@ -121,7 +129,7 @@
         </div>
       </article>
 
-      <article class="preview-card">
+      <article class="preview-card" data-preview-type="pdf">
         <span class="book-no">07</span>
         <h3>Carrier Developer Mechanism</h3>
         <p>Carrier 현상 메커니즘과 토너 대전, 현상 안정성 관계에 대한 Preview입니다.</p>
@@ -131,7 +139,7 @@
         </div>
       </article>
 
-      <article class="preview-card">
+      <article class="preview-card" data-preview-type="pdf">
         <span class="book-no">08</span>
         <h3>Auger Mark Mechanism</h3>
         <p>Auger 이송 구조에서 발생하는 농도 불균일, 주기성 화상 문제에 대한 Preview입니다.</p>
@@ -141,7 +149,7 @@
         </div>
       </article>
 
-      <article class="preview-card">
+      <article class="preview-card" data-preview-type="pdf">
         <span class="book-no">09</span>
         <h3>CR 설계 표준 기술서</h3>
         <p>Charge Roller의 전기적 특성, 접촉 조건, 화상 품질 영향에 대한 Preview입니다.</p>
@@ -151,7 +159,7 @@
         </div>
       </article>
 
-      <article class="preview-card">
+      <article class="preview-card" data-preview-type="pdf">
         <span class="book-no">10</span>
         <h3>2성분 현상 설계 표준 기술서</h3>
         <p>2성분 현상 구조, Toner/Carrier 관계, T/D 제어에 대한 Preview입니다.</p>
@@ -161,7 +169,7 @@
         </div>
       </article>
 
-      <article class="preview-card">
+      <article class="preview-card" data-preview-type="pdf">
         <span class="book-no">11</span>
         <h3>제도법 기준 설계 표준 기술서</h3>
         <p>기계 도면 작성 기준, 치수, 공차, 설계 표준화에 대한 Preview입니다.</p>
@@ -171,7 +179,7 @@
         </div>
       </article>
 
-      <article class="preview-card">
+      <article class="preview-card" data-preview-type="pdf">
         <span class="book-no">12</span>
         <h3>DR 설계 표준 기술서</h3>
         <p>Developer Roller의 구조, 재료, 저항, 표면 특성 설계에 대한 Preview입니다.</p>
@@ -181,7 +189,7 @@
         </div>
       </article>
 
-      <article class="preview-card">
+      <article class="preview-card" data-preview-type="pdf">
         <span class="book-no">13</span>
         <h3>Edge Effect 발생 메커니즘 표준 기술서</h3>
         <p>화상 Edge 부위에서 발생하는 농도, 전계, 현상 불균일 메커니즘에 대한 Preview입니다.</p>
@@ -191,7 +199,7 @@
         </div>
       </article>
 
-      <article class="preview-card">
+      <article class="preview-card" data-preview-type="pdf">
         <span class="book-no">14</span>
         <h3>Fuser Belt 설계 표준 기술서</h3>
         <p>Fuser Belt의 구조, 재료, 열특성, 내구 설계에 대한 Preview입니다.</p>
@@ -201,7 +209,7 @@
         </div>
       </article>
 
-      <article class="preview-card">
+      <article class="preview-card" data-preview-type="pdf">
         <span class="book-no">15</span>
         <h3>Paper Path 설계 표준 기술서</h3>
         <p>용지 이송 경로, Jam 방지, 곡률, Guide 설계에 대한 Preview입니다.</p>
@@ -211,7 +219,7 @@
         </div>
       </article>
 
-      <article class="preview-card">
+      <article class="preview-card" data-preview-type="pdf">
         <span class="book-no">16</span>
         <h3>OPC 제조 표준 기술서</h3>
         <p>OPC Drum의 제조 공정, 감광층, 전기적 특성에 대한 Preview입니다.</p>
@@ -221,7 +229,7 @@
         </div>
       </article>
 
-      <article class="preview-card">
+      <article class="preview-card" data-preview-type="pdf">
         <span class="book-no">17</span>
         <h3>고분자 재료 표준 기술서</h3>
         <p>프린터 부품에 사용되는 고분자 재료 특성과 설계 적용에 대한 Preview입니다.</p>
@@ -231,7 +239,7 @@
         </div>
       </article>
 
-      <article class="preview-card">
+      <article class="preview-card" data-preview-type="pdf">
         <span class="book-no">18</span>
         <h3>Heat Roller 제조 표준 기술서</h3>
         <p>Heat Roller 제조 공정, 표면 처리, 코팅 및 품질 관리에 대한 Preview입니다.</p>
@@ -241,7 +249,7 @@
         </div>
       </article>
 
-      <article class="preview-card">
+      <article class="preview-card" data-preview-type="pdf">
         <span class="book-no">19</span>
         <h3>Magnetic Roller 설계 표준 기술서</h3>
         <p>Magnetic Roller의 자력 분포, Sleeve, Core 설계 기준에 대한 Preview입니다.</p>
@@ -251,7 +259,7 @@
         </div>
       </article>
 
-      <article class="preview-card">
+      <article class="preview-card" data-preview-type="pdf">
         <span class="book-no">20</span>
         <h3>PI Belt 제조 표준 기술서</h3>
         <p>PI Belt의 재료, 성형, Imide화, 코팅 공정에 대한 Preview입니다.</p>
@@ -261,7 +269,7 @@
         </div>
       </article>
 
-      <article class="preview-card">
+      <article class="preview-card" data-preview-type="pdf">
         <span class="book-no">21</span>
         <h3>Static Electricity Offset 발생 메커니즘 기술서</h3>
         <p>정전기성 Offset의 발생 원리, 재료 및 공정 영향에 대한 Preview입니다.</p>
@@ -271,7 +279,7 @@
         </div>
       </article>
 
-      <article class="preview-card">
+      <article class="preview-card" data-preview-type="pdf">
         <span class="book-no">22</span>
         <h3>실리콘 고무 발포 설계 표준 제조공정 기술서</h3>
         <p>실리콘 고무 발포 구조, Cell 제어, 제조 조건에 대한 Preview입니다.</p>
@@ -281,7 +289,7 @@
         </div>
       </article>
 
-      <article class="preview-card">
+      <article class="preview-card" data-preview-type="pdf">
         <span class="book-no">23</span>
         <h3>Silicon Rubber Foaming 제조공정 기술서</h3>
         <p>Silicone Rubber Foaming 제조 공정 조건과 품질 관리에 대한 Preview입니다.</p>
@@ -291,7 +299,7 @@
         </div>
       </article>
 
-      <article class="preview-card">
+      <article class="preview-card" data-preview-type="pdf">
         <span class="book-no">24</span>
         <h3>White Spot 발생 메커니즘 기술서</h3>
         <p>White Spot 화상 결함의 발생 원리와 설계/공정 영향에 대한 Preview입니다.</p>
@@ -301,7 +309,7 @@
         </div>
       </article>
 
-      <article class="preview-card">
+      <article class="preview-card" data-preview-type="pdf">
         <span class="book-no">25</span>
         <h3>Transfer Roller 설계 표준 제조공정 기술서</h3>
         <p>Transfer Roller의 전기적 특성, 재료, 제조 공정에 대한 Preview입니다.</p>
@@ -311,7 +319,7 @@
         </div>
       </article>
 
-      <article class="preview-card">
+      <article class="preview-card" data-preview-type="pdf">
         <span class="book-no">26</span>
         <h3>고무 부품 설계 표준 제조공정 기술서</h3>
         <p>고무 부품의 재료, 경도, 치수, 제조 공정 설계에 대한 Preview입니다.</p>
@@ -321,7 +329,7 @@
         </div>
       </article>
 
-      <article class="preview-card">
+      <article class="preview-card" data-preview-type="pdf">
         <span class="book-no">27</span>
         <h3>토너 대전량 측정 표준서</h3>
         <p>토너 대전량 측정 원리, 측정 조건, 표준화 방법에 대한 Preview입니다.</p>
@@ -331,7 +339,7 @@
         </div>
       </article>
 
-      <article class="preview-card">
+      <article class="preview-card" data-preview-type="pdf">
         <span class="book-no">28</span>
         <h3>토너 정착성 수지 설계 기술서</h3>
         <p>토너 수지 설계와 정착성, 열특성, Offset 특성에 대한 Preview입니다.</p>
@@ -341,7 +349,7 @@
         </div>
       </article>
 
-      <article class="preview-card">
+      <article class="preview-card" data-preview-type="pdf">
         <span class="book-no">29</span>
         <h3>토너 소모량 영향 요인 분석 기술서</h3>
         <p>토너 소모량에 영향을 주는 설계, 화상, 공정 요인에 대한 Preview입니다.</p>
@@ -351,7 +359,7 @@
         </div>
       </article>
 
-      <article class="preview-card">
+      <article class="preview-card" data-preview-type="pdf">
         <span class="book-no">30</span>
         <h3>분쇄 토너 설계 표준 제조공학 기술서</h3>
         <p>분쇄 토너의 조성, 제조 공정, 입도 및 외첨 설계에 대한 Preview입니다.</p>
@@ -361,7 +369,7 @@
         </div>
       </article>
 
-      <article class="preview-card">
+      <article class="preview-card" data-preview-type="pdf">
         <span class="book-no">31</span>
         <h3>중합 토너 입자 설계 표준 제조공학 기술서</h3>
         <p>중합 토너 입자 설계, 중합 공정, 입자 제어에 대한 Preview입니다.</p>
@@ -371,7 +379,7 @@
         </div>
       </article>
 
-      <article class="preview-card">
+      <article class="preview-card" data-preview-type="pdf">
         <span class="book-no">32</span>
         <h3>현상 Layout 설계 표준 기술서</h3>
         <p>현상기 Layout, OPC/DR/MR 배치, Gap 및 각도 설계에 대한 Preview입니다.</p>
@@ -381,7 +389,7 @@
         </div>
       </article>
 
-      <article class="preview-card">
+      <article class="preview-card" data-preview-type="pdf">
         <span class="book-no">33</span>
         <h3>OPC 설계 표준서 기술서</h3>
         <p>OPC Drum의 전기적, 광학적, 기계적 설계 기준에 대한 Preview입니다.</p>
@@ -391,6 +399,11 @@
         </div>
       </article>
 
+    </div>
+
+    <div class="preview-empty" id="preview-empty" role="status" aria-live="polite" hidden>
+      <strong class="preview-empty-title">공개된 영상 과정 Preview가 아직 없습니다.</strong>
+      <p class="preview-empty-description">관리자가 영상 Preview를 추가하면 이 영역에 표시됩니다.</p>
     </div>
   </div>
 </section>
@@ -406,9 +419,17 @@
     margin: 0 auto;
   }
 
-  .preview-header {
-    text-align: center;
+  .preview-heading-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+    gap: 28px;
     margin-bottom: 28px;
+  }
+
+  .preview-header {
+    text-align: left;
+    margin: 0;
   }
 
   .preview-label {
@@ -429,10 +450,45 @@
 
   .preview-description {
     max-width: 820px;
-    margin: 16px auto 0;
+    margin: 16px 0 0;
     font-size: 16px;
     line-height: 1.7;
     color: #4b5563;
+    white-space: pre-line;
+  }
+
+  .preview-filter {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .preview-filter button {
+    min-height: 42px;
+    padding: 0 16px;
+    border: 1px solid #cbd5e1;
+    border-radius: 0;
+    background: #ffffff;
+    color: #334155;
+    font: inherit;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: border-color 0.18s ease, background 0.18s ease, color 0.18s ease;
+  }
+
+  .preview-filter button:hover,
+  .preview-filter button:focus-visible {
+    border-color: #0b5e96;
+    color: #0b5e96;
+    outline: none;
+  }
+
+  .preview-filter button.is-active {
+    border-color: #0b5e96;
+    background: #0b5e96;
+    color: #ffffff;
   }
 
   .preview-notice {
@@ -451,6 +507,34 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 18px;
+  }
+
+  .preview-card[hidden],
+  .preview-grid[hidden],
+  .preview-empty[hidden] {
+    display: none !important;
+  }
+
+  .preview-empty {
+    padding: 52px 24px;
+    border: 1px dashed #93bdd8;
+    background: #ffffff;
+    text-align: center;
+    color: #49687d;
+  }
+
+  .preview-empty-title {
+    display: block;
+    margin-bottom: 10px;
+    color: #17364b;
+    font-size: 18px;
+    line-height: 1.45;
+  }
+
+  .preview-empty-description {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.7;
   }
 
   .preview-card {
@@ -520,6 +604,16 @@
   }
 
   @media (max-width: 980px) {
+    .preview-heading-row {
+      grid-template-columns: 1fr;
+      align-items: start;
+      gap: 20px;
+    }
+
+    .preview-filter {
+      justify-content: flex-start;
+    }
+
     .preview-grid {
       grid-template-columns: repeat(2, 1fr);
     }
@@ -532,6 +626,16 @@
 
     .preview-header h2 {
       font-size: 27px;
+    }
+
+    .preview-filter {
+      display: grid;
+      grid-template-columns: 1fr;
+      width: 100%;
+    }
+
+    .preview-filter button {
+      width: 100%;
     }
 
     .preview-grid {
@@ -569,32 +673,55 @@
 
   const SECTION_ID = 'technical-book-previews';
   const SUPPORTED = ['ko', 'en', 'zh'];
+  const PREVIEW_FILTERS = ['all', 'pdf', 'video'];
+  let activePreviewFilter = 'all';
 
   const headerText = {
     ko: {
-      label: 'Technical Book Preview',
-      title: '기술서적 Preview PDF',
-      description: '구매 전 책의 구성, 핵심 기술 범위, 적용 분야, 기술적 배경을 확인할 수 있는 홍보용 Preview 자료입니다.\n한국어판과 중국어판을 각각 제공합니다.',
+      label: 'Preview Catalog',
+      title: '기술자료 · 교육 Preview',
+      description: '구매 전 책의 구성, 핵심 기술 범위, 적용 분야와 영상 과정의 내용을 확인할 수 있는 공개 Preview 자료입니다.\n기술서적 PDF와 영상 과정을 구분하여 확인할 수 있습니다.',
       noticeStrong: '안내:',
-      notice: 'Preview PDF는 기술서의 일부 내용을 소개하기 위한 자료입니다.\n상세 설계 기준, 정량 조건, 공정 Recipe, 검증 방법, 관리 기준은 정식 PDF 본문에 포함되어 있습니다.',
+      notice: 'Preview는 기술서적과 영상 과정의 일부 내용을 소개하기 위한 자료입니다.\n상세 설계 기준, 정량 조건, 공정 Recipe, 검증 방법, 관리 기준은 정식 PDF 또는 정식 영상 과정에 포함되어 있습니다.',
+      filterAll: '전체',
+      filterPdf: '기술서적 PDF',
+      filterVideo: '영상 과정',
+      emptyAllTitle: '공개된 Preview가 아직 없습니다.',
+      emptyPdfTitle: '공개된 기술서적 PDF Preview가 아직 없습니다.',
+      emptyVideoTitle: '공개된 영상 과정 Preview가 아직 없습니다.',
+      emptyDescription: '관리자가 해당 Preview를 추가하면 이 영역에 표시됩니다.',
       koButton: '한국어 Preview',
       zhButton: '中文 Preview'
     },
     en: {
-      label: 'Technical Book Preview',
-      title: 'Technical Book Preview PDFs',
-      description: 'These public preview files allow customers to check the book structure, key technical scope, application fields, and technical background before purchase.\nKorean and Chinese preview versions are provided.',
+      label: 'Preview Catalog',
+      title: 'Technical Publications & Course Previews',
+      description: 'These public previews let customers review book structure, key technical scope, application fields, and video-course content before purchase.\nTechnical-book PDFs and video courses can be viewed by category.',
       noticeStrong: 'Notice:',
-      notice: 'Preview PDFs are promotional materials that introduce only part of each technical book.\nDetailed design standards, quantitative conditions, process recipes, verification methods, and control standards are included in the full paid PDF.',
+      notice: 'Previews introduce only part of each technical publication or video course.\nDetailed design standards, quantitative conditions, process recipes, verification methods, and control standards are included in the full PDF or complete video course.',
+      filterAll: 'All',
+      filterPdf: 'Technical PDFs',
+      filterVideo: 'Video Courses',
+      emptyAllTitle: 'No public previews are available yet.',
+      emptyPdfTitle: 'No public technical PDF previews are available yet.',
+      emptyVideoTitle: 'No public video course previews are available yet.',
+      emptyDescription: 'This area will display previews after they are published by the administrator.',
       koButton: 'Korean Preview',
       zhButton: 'Chinese Preview'
     },
     zh: {
-      label: 'Technical Book Preview',
-      title: '技术书籍 Preview PDF',
-      description: '这是购买前可确认书籍结构、核心技术范围、应用领域和技术背景的公开 Preview 资料。\n分别提供韩文版和中文版。',
+      label: 'Preview Catalog',
+      title: '技术资料与课程 Preview',
+      description: '这是购买前可确认书籍结构、核心技术范围、应用领域及视频课程内容的公开 Preview 资料。\n可按技术书籍 PDF 和视频课程分类查看。',
       noticeStrong: '说明：',
-      notice: 'Preview PDF 是用于介绍技术书籍部分内容的资料。\n详细设计标准、定量条件、工艺 Recipe、验证方法和管理标准包含在正式 PDF 正文中。',
+      notice: 'Preview 仅用于介绍技术书籍或视频课程的部分内容。\n详细设计标准、定量条件、工艺 Recipe、验证方法和管理标准包含在正式 PDF 或完整视频课程中。',
+      filterAll: '全部',
+      filterPdf: '技术书籍 PDF',
+      filterVideo: '视频课程',
+      emptyAllTitle: '目前还没有公开的 Preview。',
+      emptyPdfTitle: '目前还没有公开的技术书籍 PDF Preview。',
+      emptyVideoTitle: '目前还没有公开的视频课程 Preview。',
+      emptyDescription: '管理员发布相应 Preview 后，将显示在此区域。',
       koButton: '韩文 Preview',
       zhButton: '中文 Preview'
     }
@@ -665,6 +792,69 @@
     el.textContent = value || '';
   }
 
+  function normalizePreviewFilter(value) {
+    return PREVIEW_FILTERS.includes(value) ? value : 'all';
+  }
+
+  function updatePreviewEmptyState(section, filter, visibleCount) {
+    const empty = section.querySelector('#preview-empty');
+    const grid = section.querySelector('#preview-content-grid');
+    if (!empty || !grid) return;
+
+    const current = normalizeLang(section.getAttribute('data-preview-lang') || getCurrentLang());
+    const h = headerText[current] || headerText.ko;
+    const title = empty.querySelector('.preview-empty-title');
+    const description = empty.querySelector('.preview-empty-description');
+
+    if (title) {
+      title.textContent = filter === 'pdf'
+        ? h.emptyPdfTitle
+        : filter === 'video'
+          ? h.emptyVideoTitle
+          : h.emptyAllTitle;
+    }
+    if (description) description.textContent = h.emptyDescription;
+
+    const hasVisibleCards = visibleCount > 0;
+    grid.hidden = !hasVisibleCards;
+    empty.hidden = hasVisibleCards;
+  }
+
+  function applyPreviewFilter(filter) {
+    const section = document.getElementById(SECTION_ID);
+    if (!section) return;
+
+    activePreviewFilter = normalizePreviewFilter(filter);
+    let visibleCount = 0;
+
+    section.querySelectorAll('.preview-card').forEach((card) => {
+      const type = card.getAttribute('data-preview-type') || 'pdf';
+      const show = activePreviewFilter === 'all' || type === activePreviewFilter;
+      card.hidden = !show;
+      card.setAttribute('aria-hidden', show ? 'false' : 'true');
+      if (show) visibleCount += 1;
+    });
+
+    section.querySelectorAll('[data-preview-filter]').forEach((button) => {
+      const active = button.getAttribute('data-preview-filter') === activePreviewFilter;
+      button.classList.toggle('is-active', active);
+      button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+
+    updatePreviewEmptyState(section, activePreviewFilter, visibleCount);
+  }
+
+  function bindPreviewFilters() {
+    const section = document.getElementById(SECTION_ID);
+    if (!section) return;
+
+    section.querySelectorAll('[data-preview-filter]').forEach((button) => {
+      button.addEventListener('click', function () {
+        applyPreviewFilter(button.getAttribute('data-preview-filter'));
+      });
+    });
+  }
+
   function applyPreviewLanguage(lang) {
     const section = document.getElementById(SECTION_ID);
     if (!section) return;
@@ -676,6 +866,18 @@
     setTextPreserveBreaks(section.querySelector('.preview-header h2'), h.title);
     setTextPreserveBreaks(section.querySelector('.preview-description'), h.description);
 
+    const filterAll = section.querySelector('[data-preview-filter="all"]');
+    const filterPdf = section.querySelector('[data-preview-filter="pdf"]');
+    const filterVideo = section.querySelector('[data-preview-filter="video"]');
+    if (filterAll) filterAll.textContent = h.filterAll;
+    if (filterPdf) filterPdf.textContent = h.filterPdf;
+    if (filterVideo) filterVideo.textContent = h.filterVideo;
+
+    const filterGroup = section.querySelector('.preview-filter');
+    if (filterGroup) {
+      filterGroup.setAttribute('aria-label', current === 'en' ? 'Preview content filters' : current === 'zh' ? 'Preview 内容筛选' : 'Preview 콘텐츠 필터');
+    }
+
     const notice = section.querySelector('.preview-notice');
     if (notice) {
       notice.innerHTML = '<strong></strong> <span></span>';
@@ -683,7 +885,7 @@
       notice.querySelector('span').textContent = h.notice;
     }
 
-    const cards = Array.from(section.querySelectorAll('.preview-card'));
+    const cards = Array.from(section.querySelectorAll('.preview-card[data-preview-type="pdf"]'));
     cards.forEach((card, index) => {
       const book = books[index];
       if (!book) return;
@@ -699,6 +901,7 @@
     });
 
     section.setAttribute('data-preview-lang', current);
+    applyPreviewFilter(activePreviewFilter);
   }
 
   function applySoon(lang) {
@@ -718,6 +921,8 @@
   }
 
   function init() {
+    bindPreviewFilters();
+    applyPreviewFilter('all');
     applySoon(getCurrentLang());
     bindLanguageButtons();
   }

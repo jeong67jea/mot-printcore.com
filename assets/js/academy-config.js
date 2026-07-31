@@ -4,7 +4,7 @@
  * NEVER place Database Password, service_role key, sb_secret key, or PortOne API Secret here.
  */
 window.MOT_ACADEMY_CONFIG = {
-  siteUrl: "https://jeong67jea.github.io/mot-printcore.com/",
+  siteUrl: "https://www.mot-printcore.com/",
 
   supabase: {
     // Confirmed from the Supabase project overview screen.

@@ -50,3 +50,89 @@ a{color:inherit;text-decoration:none}button,input,textarea,select{font:inherit}b
 #academy-catalog-section {
   scroll-margin-top: 96px;
 }
+
+
+/* =========================================================
+   Mobile hamburger navigation only
+   Existing desktop and content styles above are unchanged.
+========================================================= */
+.a-mobile-menu-button{
+  display:none;
+  position:relative;
+  flex:0 0 auto;
+  width:42px;
+  height:38px;
+  padding:9px;
+  border:1px solid rgba(255,255,255,.28);
+  background:transparent;
+  color:#fff;
+}
+.a-mobile-menu-button span{
+  display:block;
+  width:100%;
+  height:2px;
+  margin:4px 0;
+  background:currentColor;
+  transition:transform .18s ease,opacity .18s ease;
+}
+.a-mobile-menu-button.is-open span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+.a-mobile-menu-button.is-open span:nth-child(2){opacity:0}
+.a-mobile-menu-button.is-open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+
+@media(max-width:760px){
+  .a-header-inner{position:relative}
+  .a-mobile-menu-button{
+    display:block;
+    margin-left:auto;
+    z-index:2;
+  }
+  .a-nav{
+    display:none;
+    position:absolute;
+    top:calc(100% + 1px);
+    left:0;
+    right:0;
+    z-index:950;
+    padding:12px 15px 16px;
+    border-top:1px solid rgba(173,231,252,.18);
+    border-bottom:1px solid rgba(173,231,252,.22);
+    background:#071d36;
+    box-shadow:0 18px 34px rgba(2,15,29,.28);
+  }
+  .a-nav.is-mobile-open{
+    display:flex;
+    align-items:stretch;
+    flex-direction:column;
+    gap:0;
+  }
+  .a-nav.is-mobile-open>a,
+  .a-nav.is-mobile-open>a:not(.a-nav-cta),
+  .a-nav.is-mobile-open .a-nav-cta{
+    display:block;
+    width:100%;
+    padding:12px 4px;
+    border:0;
+    border-bottom:1px solid rgba(255,255,255,.12);
+    color:#e8f6fc;
+    font-size:13px;
+    text-align:left;
+  }
+  .a-nav.is-mobile-open .a-lang{
+    width:100%;
+    margin-top:10px;
+    padding:10px 0 0;
+    border-left:0;
+    border-top:1px solid rgba(255,255,255,.12);
+  }
+  .a-nav.is-mobile-open .a-lang button{
+    min-width:44px;
+    min-height:36px;
+    font-size:11px;
+  }
+  .a-nav.is-mobile-open .a-auth{
+    width:100%;
+    min-height:42px;
+    margin-top:10px;
+    font-size:12px;
+  }
+}

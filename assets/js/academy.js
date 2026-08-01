@@ -492,6 +492,46 @@ function attachGeneralRoutes() {
   $$('[data-open-login]').forEach((button) => button.addEventListener('click', openLogin));
 }
 
+// Mobile-only hamburger navigation. Existing routes, authentication, language and purchase logic are unchanged.
+function bindMobileMenu() {
+  const button = $('#academy-mobile-menu-button');
+  const nav = $('#academy-primary-nav');
+  if (!button || !nav) return;
+
+  const closeMenu = () => {
+    nav.classList.remove('is-mobile-open');
+    button.classList.remove('is-open');
+    button.setAttribute('aria-expanded', 'false');
+  };
+
+  button.addEventListener('click', (event) => {
+    event.stopPropagation();
+    const willOpen = !nav.classList.contains('is-mobile-open');
+    nav.classList.toggle('is-mobile-open', willOpen);
+    button.classList.toggle('is-open', willOpen);
+    button.setAttribute('aria-expanded', String(willOpen));
+  });
+
+  nav.addEventListener('click', (event) => {
+    if (event.target.closest('a')) closeMenu();
+  });
+
+  document.addEventListener('click', (event) => {
+    if (!nav.contains(event.target) && !button.contains(event.target)) closeMenu();
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      closeMenu();
+      button.focus();
+    }
+  });
+
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 760) closeMenu();
+  });
+}
+
 async function bootstrap() {
   let client = null;
   try {
@@ -500,6 +540,7 @@ async function bootstrap() {
     setSetupBanner(!configured() || !client);
     await bindAuth();
     attachGeneralRoutes();
+    bindMobileMenu();
     if (PAGE === 'academy') await loadCatalog();
     if (PAGE === 'library') await loadLibrary();
     if (PAGE === 'player') await loadPlayer();

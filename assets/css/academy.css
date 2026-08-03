@@ -16,7 +16,7 @@
   --a-shadow:0 28px 80px rgba(5,24,46,.16);
 }
 *{box-sizing:border-box}
-html{background:var(--a-paper);scroll-behavior:smooth;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+html{background:var(--a-paper);scroll-behavior:smooth}
 body{margin:0;background:var(--a-paper);color:var(--a-ink);font-family:var(--a-font);font-size:16px;line-height:1.72;letter-spacing:-.018em}
 a{color:inherit;text-decoration:none}button,input,textarea,select{font:inherit}button{cursor:pointer}
 .a-container{width:min(calc(100% - 56px),var(--a-max));margin:0 auto}

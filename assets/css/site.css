@@ -88,3 +88,55 @@ a{color:inherit;text-decoration:none}button,input,textarea{font:inherit}button{c
 .hero-business-link {
   display:inline-flex
 }
+
+/* Mobile language layout-width lock
+   Keeps the layout viewport at device width for translated EN/ZH content.
+   Pinch zoom remains enabled; desktop rules are untouched. */
+@media (max-width:900px){
+  html[data-locale="en"],
+  html[data-locale="zh"],
+  html[data-locale="en"] body,
+  html[data-locale="zh"] body{
+    width:100%;
+    max-width:100%;
+    overflow-x:clip;
+  }
+
+  html[data-locale="en"] .hero-layout,
+  html[data-locale="zh"] .hero-layout,
+  html[data-locale="en"] .hero-copy,
+  html[data-locale="zh"] .hero-copy,
+  html[data-locale="en"] .hero-meta,
+  html[data-locale="zh"] .hero-meta,
+  html[data-locale="en"] .split-head,
+  html[data-locale="zh"] .split-head,
+  html[data-locale="en"] .section-head,
+  html[data-locale="zh"] .section-head,
+  html[data-locale="en"] .navigator-layout,
+  html[data-locale="zh"] .navigator-layout,
+  html[data-locale="en"] .method-layout,
+  html[data-locale="zh"] .method-layout,
+  html[data-locale="en"] .profile-layout,
+  html[data-locale="zh"] .profile-layout,
+  html[data-locale="en"] .knowledge-layout,
+  html[data-locale="zh"] .knowledge-layout,
+  html[data-locale="en"] .contact-layout,
+  html[data-locale="zh"] .contact-layout{
+    min-width:0;
+    max-width:100%;
+  }
+
+  html[data-locale="en"] [data-i18n],
+  html[data-locale="en"] [data-i18n-html],
+  html[data-locale="zh"] [data-i18n],
+  html[data-locale="zh"] [data-i18n-html]{
+    min-width:0;
+    max-width:100%;
+    overflow-wrap:break-word;
+  }
+
+  html[data-locale="zh"] [data-i18n],
+  html[data-locale="zh"] [data-i18n-html]{
+    word-break:normal;
+  }
+}

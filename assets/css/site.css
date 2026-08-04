@@ -140,3 +140,38 @@ a{color:inherit;text-decoration:none}button,input,textarea{font:inherit}button{c
     word-break:normal;
   }
 }
+
+/* Mobile EN/ZH engineering navigator frame containment.
+   Prevents this single grid/card section from keeping a desktop min-content width. */
+@media (max-width:620px){
+  html:is([data-locale="en"],[data-locale="zh"]) .navigator-layout > *,
+  html:is([data-locale="en"],[data-locale="zh"]) .navigator-tool,
+  html:is([data-locale="en"],[data-locale="zh"]) .navigator-tabs,
+  html:is([data-locale="en"],[data-locale="zh"]) .issue-panel,
+  html:is([data-locale="en"],[data-locale="zh"]) .issue-visual,
+  html:is([data-locale="en"],[data-locale="zh"]) .issue-copy,
+  html:is([data-locale="en"],[data-locale="zh"]) .issue-output,
+  html:is([data-locale="en"],[data-locale="zh"]) .issue-output b{
+    min-width:0;
+    max-width:100%;
+  }
+
+  html:is([data-locale="en"],[data-locale="zh"]) .navigator-tool{
+    width:100%;
+    box-sizing:border-box;
+  }
+
+  html:is([data-locale="en"],[data-locale="zh"]) .navigator-tabs{
+    width:auto;
+  }
+
+  html:is([data-locale="en"],[data-locale="zh"]) .issue-visual svg{
+    display:block;
+    max-width:100%;
+  }
+
+  html:is([data-locale="en"],[data-locale="zh"]) .issue-copy > p,
+  html:is([data-locale="en"],[data-locale="zh"]) .issue-output b{
+    overflow-wrap:anywhere;
+  }
+}

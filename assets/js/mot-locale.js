@@ -76,19 +76,8 @@
   }
 
   function syncDocument(locale) {
-    const contentLanguage = locale === 'zh' ? 'zh-CN' : locale;
-    const mobileView = window.matchMedia &&
-      window.matchMedia('(max-width: 900px) and (pointer: coarse)').matches;
-
-    // iPhone/in-app browsers can switch to a foreign-language page mode when
-    // the root HTML language changes. Keep the proven Korean mobile viewport
-    // behavior at the root, while preserving the real content language on body.
-    document.documentElement.lang = mobileView ? 'ko' : contentLanguage;
+    document.documentElement.lang = locale === 'zh' ? 'zh-CN' : locale;
     document.documentElement.dataset.locale = locale;
-    document.documentElement.toggleAttribute('translate', mobileView);
-    if (mobileView) document.documentElement.setAttribute('translate', 'no');
-    else document.documentElement.removeAttribute('translate');
-    if (document.body) document.body.lang = contentLanguage;
     propagate(locale);
   }
 

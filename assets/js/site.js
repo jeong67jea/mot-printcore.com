@@ -34,14 +34,8 @@
 
   function translate() {
     const dict = dictionaries[locale] || dictionaries[defaultLocale];
-    const contentLanguage = locale === 'zh' ? 'zh-CN' : locale;
-    const mobileView = window.matchMedia &&
-      window.matchMedia('(max-width: 900px) and (pointer: coarse)').matches;
-    document.documentElement.lang = mobileView ? 'ko' : contentLanguage;
+    document.documentElement.lang = locale === 'zh' ? 'zh-CN' : locale;
     document.documentElement.dataset.locale = locale;
-    if (mobileView) document.documentElement.setAttribute('translate', 'no');
-    else document.documentElement.removeAttribute('translate');
-    if (document.body) document.body.lang = contentLanguage;
     sharedLocale?.propagate(locale);
     $$('[data-i18n]').forEach((el) => {
       const key = el.dataset.i18n;
